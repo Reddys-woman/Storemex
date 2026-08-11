@@ -1,23 +1,33 @@
+require('dns').setDefaultResultOrder('ipv4first');
 const path = require('path');
-const fs = require('fs');
-const dotenv = require('dotenv');
-
-// Check local .env, ai/.env, and root .env
-[
-  path.join(__dirname, '.env'),
-  path.join(__dirname, 'ai', '.env'),
-  path.join(__dirname, '..', '.env')
-].forEach((envPath) => {
-  if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath });
-  }
-});
-
+require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 const { createClient } = require('@supabase/supabase-js');
+const axios = require('axios');
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder-project.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'placeholder-key';
+const customFetch = async (url, options = {}) => {
+  const response = await axios({
+    url,
+    method: options.method || 'GET',
+    headers: options.headers,
+    data: options.body,
+    validateStatus: () => true,
+  });
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+  return {
+    ok: response.status >= 200 && response.status < 300,
+    status: response.status,
+    headers: {
+      get: (name) => response.headers[name.toLowerCase()] || null,
+    },
+    json: async () => response.data,
+    text: async () => JSON.stringify(response.data),
+  };
+};
 
-module.exports = supabase;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY,
+  { global: { fetch: customFetch } }
+);
+
+module.exports = supabase;
