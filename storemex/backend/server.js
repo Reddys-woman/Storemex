@@ -100,6 +100,41 @@ app.get('/products/:user_id', async (req, res) => {
 
   res.status(200).json({ products: data });
 });
+
+app.get('/api/alexa/pantry', async (req, res) => {
+    try {
+        const userId = req.query.user_id;
+
+        if (!userId) {
+            return res.status(400).json({
+                error: 'user_id is required'
+            });
+        }
+
+        const { data, error } = await supabase
+            .from('products')
+            .select('name, brand, quantity, unit, expiry_date, category')
+            .eq('user_id', userId);
+
+        if (error) {
+            return res.status(500).json({
+                error: error.message
+            });
+        }
+
+        res.json({
+            products: data || []
+        });
+
+    } catch (error) {
+        console.error('Alexa Pantry Error:', error);
+
+        res.status(500).json({
+            error: error.message
+        });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
