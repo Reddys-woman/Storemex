@@ -165,7 +165,7 @@
             <!-- Rice -->
             <div class="pantry-card">
               <div class="pantry-illustration" style="background:var(--orange-soft);">
-                <span class="days-badge" style="color:#5C7A45;">25 days left</span>
+                <span class="days-badge" style="color:#5C7A45;">In Stock</span>
                 <svg width="70" height="52" viewBox="0 0 70 52" fill="none">
                   <path d="M10 26a25 12 0 0 0 50 0z" fill="#F3E7CE" stroke="#D98A3D" stroke-width="1.6"/>
                   <ellipse cx="35" cy="26" rx="25" ry="10" fill="#FBF3DD" stroke="#D98A3D" stroke-width="1.6"/>
@@ -407,15 +407,21 @@
   <div class="page-header">
     <div>
       <h2>Pantry</h2>
-      <p>Every item you have on hand, all in one place.</p>
+      <p>Every item you have on hand, grouped by category.</p>
     </div>
   </div>
-  <div class="page-empty">
+
+  <!-- Category sections are injected here by script.js — a category
+       only appears when at least one item in stock belongs to it. -->
+  <div id="pantryCategories" class="pantry-categories"></div>
+
+  <!-- Shown only if there are zero items in the whole pantry -->
+  <div class="page-empty" id="pantryEmptyState" style="display:none;">
     <div class="page-empty-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><path d="M4 8h16M6 8l1 11a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-11M9 8V5a3 3 0 0 1 6 0v3"/></svg>
     </div>
-    <h3>Pantry content coming soon</h3>
-    <p>This page will list every item in your pantry with quantity, expiry &amp; category filters.</p>
+    <h3>Your pantry is empty</h3>
+    <p>Scan or add items and they'll show up here, grouped by category.</p>
   </div>
 </div>
 
