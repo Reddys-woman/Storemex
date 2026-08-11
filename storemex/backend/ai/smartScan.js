@@ -1,4 +1,4 @@
-const { detectBarcodeAndLookup } = require("./barcode");
+const { detectBarcodeAndLookup, lookupBarcode } = require("./barcode");
 const { scanImage } = require("./scanner");
 
 /**
@@ -23,7 +23,7 @@ async function smartScan(imageInput) {
     return aiResult;
 }
 
-module.exports = { smartScan };
+module.exports = { smartScan, lookupBarcode };
 
 if (require.main === module) {
     const path = require("path");
