@@ -266,9 +266,10 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Signup failed");
 
-      formStatus.textContent = "Account created — redirecting…";
+      formStatus.textContent = "Account created! Redirecting to login…";
       formStatus.classList.add("success");
-      window.location.href = "index.html";
+      setTimeout(() => { window.location.href = "login.html"; }, 1500);
+      
     } catch (err) {
       formStatus.textContent = err.message || "Something went wrong. Try again.";
       formStatus.classList.add("error");
