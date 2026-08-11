@@ -129,7 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.success && data.data) {
           const item = data.data;
           statusSpan.style.color = '#10b981';
-          statusSpan.textContent = ` ✅ Scanned: ${item.brand} ${item.name} (${item.quantity || ''} ${item.unit || ''})`;
+          statusSpan.textContent = ` ✅ Scanned: ${item.brand ? item.brand + ' ' : ''}${item.name} (${item.quantity || ''} ${item.unit || ''})`;
+          
+          // Dynamically add card to Pantry UI
+          addPantryCardToUI(item);
         } else {
           statusSpan.style.color = '#ef4444';
           statusSpan.textContent = ' ❌ Scan failed: ' + (data.error || 'Server error');
@@ -141,6 +144,46 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  function addPantryCardToUI(item) {
+    const pantryRow = document.getElementById('pantryScroll');
+    if (!pantryRow) return;
+
+    const card = document.createElement('div');
+    card.className = 'pantry-card';
+    
+    let daysBadge = 'Fresh 🟢';
+    if (item.expiry_date) {
+      daysBadge = item.expiry_date;
+    }
+
+    const qtyText = item.quantity ? `${item.quantity} ${item.unit || ''}` : '1 pack';
+    const displayName = item.brand ? `${item.brand} ${item.name}` : item.name;
+
+    card.innerHTML = `
+      <div class="pantry-illustration" style="background:var(--amber-soft);">
+        <span class="days-badge" style="color:#5C7A45;">${daysBadge}</span>
+        <svg width="52" height="60" viewBox="0 0 52 60" fill="none">
+          <path d="M10 10h32l2 6v34a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V16l2-6z" fill="#F6DDA0" stroke="#C98A2E" stroke-width="1.8"/>
+          <path d="M10 10c2-5 6-8 16-8s14 3 16 8" fill="none" stroke="#C98A2E" stroke-width="1.8"/>
+          <path d="M16 28h20M16 36h20M16 44h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="pantry-name">${escapeHtml(displayName)}</div>
+      <div class="pantry-meta">${escapeHtml(qtyText)} &nbsp;·&nbsp; Qty: 1</div>
+    `;
+
+    pantryRow.insertBefore(card, pantryRow.firstChild);
+
+    // Update total items count in stat card
+    const totalItemsEl = document.querySelector('.stat-value');
+    if (totalItemsEl) {
+      const currentVal = parseInt(totalItemsEl.textContent, 10);
+      if (!isNaN(currentVal)) {
+        totalItemsEl.textContent = currentVal + 1;
+      }
+    }
   }
 
   function addFileRow(file, fileList) {
