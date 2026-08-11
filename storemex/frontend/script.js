@@ -57,16 +57,20 @@ const PANTRY_CATEGORIES = [
 // a short timeline.
 const PANTRY_NO_EXPIRY_CATEGORIES = ['grains', 'pulses'];
 
-// Real pantry data — starts empty. Items are added via the "Add
-// Item" modal (or Scan Product, once that's wired up). Every item
-// needs: name, category (must match a key above), icon (must match
-// a key in PANTRY_ICONS), size (the descriptive package text shown
-// on the left of the meta line, e.g. "500 g"), unit (the unit token
-// used for merge/low-stock math — kg/g/L/pcs/pack/units), and qty
-// (a NUMBER, decimals allowed — e.g. 1.5 for 1.5 kg tomatoes).
-// "days" is only used for perishables — grains/pulses categories are
-// exempt from expiry tracking regardless (see PANTRY_NO_EXPIRY_CATEGORIES).
-const PANTRY_ITEMS = [];
+// Real pantry data. Seeded with a few out-of-stock staples (qty 0)
+// so Unavailable alerts and the Shopping List have something to
+// show. Adding the same name again via the Add Item modal merges
+// into the existing entry and raises qty from 0.
+// Every item needs: name, category (key above), icon (PANTRY_ICONS),
+// size, unit (kg/g/L/ml/pcs/pack/units), qty (number). Optional
+// "days" for perishables — grains/pulses never use an expiry countdown.
+const PANTRY_ITEMS = [
+  { name: 'Rice',   category: 'grains',     icon: 'rice',  size: '0 kg',  unit: 'kg',  qty: 0 },
+  { name: 'Milk',   category: 'dairy',      icon: 'egg',   size: '0 L',   unit: 'L',   qty: 0 },
+  { name: 'Potato', category: 'vegetables', icon: 'leaf',  size: '0 kg',  unit: 'kg',  qty: 0 },
+  { name: 'Onion',  category: 'vegetables', icon: 'leaf',  size: '0 kg',  unit: 'kg',  qty: 0 },
+  { name: 'Bread',  category: 'bakery',     icon: 'bread', size: '0 pcs', unit: 'pcs', qty: 0 }
+];
 
 /* ============================================================
    NAME / UNIT HELPERS
