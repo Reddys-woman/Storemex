@@ -18,7 +18,7 @@ const PANTRY_ICONS = {
   bottle: `<svg width="46" height="60" viewBox="0 0 46 60" fill="none"><path d="M17 2h12l2 10-3 4v34a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V16l-3-4 2-10z" fill="#EAF3FA" stroke="#4E7FA6" stroke-width="1.8"/><rect x="16" y="26" width="14" height="12" fill="#4E7FA6" opacity="0.85"/><rect x="17" y="6" width="12" height="5" rx="1" fill="#4E7FA6"/></svg>`,
   rice: `<svg width="70" height="52" viewBox="0 0 70 52" fill="none"><path d="M10 26a25 12 0 0 0 50 0z" fill="#F3E7CE" stroke="#D98A3D" stroke-width="1.6"/><ellipse cx="35" cy="26" rx="25" ry="10" fill="#FBF3DD" stroke="#D98A3D" stroke-width="1.6"/><ellipse cx="27" cy="24" rx="2.6" ry="1.4" fill="#D98A3D"/><ellipse cx="35" cy="21" rx="2.6" ry="1.4" fill="#D98A3D"/><ellipse cx="43" cy="25" rx="2.6" ry="1.4" fill="#D98A3D"/><ellipse cx="38" cy="28" rx="2.6" ry="1.4" fill="#D98A3D"/></svg>`,
   egg: `<svg width="70" height="52" viewBox="0 0 70 52" fill="none"><ellipse cx="16" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/><ellipse cx="35" cy="22" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/><ellipse cx="54" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/></svg>`,
-  fish: `<svg width="72" height="46" viewBox="0 0 72 46" fill="none"><path d="M6 23C14 9 34 5 46 13c-4 4-4 16 0 20-12 8-32 4-40-10z" fill="#DCEFEA" stroke="#4E9A8A" stroke-width="1.8"/><path d="M46 13c8 2 14 6 14 10s-6 8-14 10c2-6 2-14 0-20z" fill="#BFE0DA" stroke="#4E9A8A" stroke-width="1.6"/><circle cx="18" cy="21" r="2.2" fill="#4E9A8A"/><path d="M14 27c4 2 10 2 14 0" stroke="#4E9A8A" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/></svg>`,
+  fish: `<svg width="64" height="58" viewBox="0 0 64 58" fill="none"><path d="M14 10c14-6 30-2 38 10 6 10 4 22-6 28-12 7-28 4-36-8-3-5-2-10 2-12-6-2-8-8-4-14-2-2-1-3 6-4z" fill="#E7C7B8" stroke="#4E9A8A" stroke-width="1.8" stroke-linejoin="round"/><circle cx="24" cy="18" r="3.4" fill="#fff" stroke="#4E9A8A" stroke-width="1.4"/><path d="M16 30c10 4 24 4 34-2M18 38c10 4 22 3 30-4" stroke="#4E9A8A" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/></svg>`,
   snack: `<svg width="52" height="60" viewBox="0 0 52 60" fill="none"><path d="M10 10h32l2 6v34a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V16l2-6z" fill="#F6DDA0" stroke="#C98A2E" stroke-width="1.8"/><path d="M10 10c2-5 6-8 16-8s14 3 16 8" fill="none" stroke="#C98A2E" stroke-width="1.8"/><path d="M16 28h20M16 36h20M16 44h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>`,
   bread: `<svg width="70" height="50" viewBox="0 0 70 50" fill="none"><path d="M8 30c0-14 12-22 27-22s27 8 27 22c0 8-6 14-14 14H22c-8 0-14-6-14-14z" fill="#F3D9A6" stroke="#B08655" stroke-width="1.8"/><path d="M20 22c4-6 10-9 15-9s11 3 15 9" stroke="#B08655" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/></svg>`,
   jar: `<svg width="50" height="60" viewBox="0 0 50 60" fill="none"><rect x="10" y="16" width="30" height="38" rx="6" fill="#EDE7DD" stroke="#8C7C63" stroke-width="1.8"/><rect x="16" y="6" width="18" height="12" rx="3" fill="#C9A15C" stroke="#8C7C63" stroke-width="1.6"/><path d="M14 30h22M14 38h22M14 46h16" stroke="#8C7C63" stroke-width="1.4" opacity="0.5"/></svg>`
@@ -35,6 +35,9 @@ const PANTRY_ICON_BG = {
 // The only categories the pantry recognizes, in display order.
 // A category is skipped entirely when nothing in PANTRY_ITEMS
 // belongs to it — nothing is ever shown "empty".
+// Categories whose items are restock-focused, long-lasting /
+// non-perishable staples. Items in these categories never get an
+// expiry countdown badge — see PANTRY_NO_EXPIRY_CATEGORIES below.
 const PANTRY_CATEGORIES = [
   { key: 'vegetables', label: 'Vegetables',          icon: 'leaf'  },
   { key: 'fruits',      label: 'Fruits',              icon: 'apple' },
@@ -45,8 +48,14 @@ const PANTRY_CATEGORIES = [
   { key: 'bakery',      label: 'Bakery',               icon: 'bread' },
   { key: 'snacks',      label: 'Snacks',               icon: 'snack' },
   { key: 'beverages',   label: 'Beverages',            icon: 'bottle'},
+  { key: 'pantryStaples', label: 'Pantry Staples',     icon: 'jar'   },
+  { key: 'dryGoods',    label: 'Dry Goods',            icon: 'rice'  },
   { key: 'others',      label: 'Others',               icon: 'jar'   }
 ];
+
+// Categories that are restock-focused / non-perishable — items here
+// are shown without any expiry date or "days left" countdown.
+const PANTRY_NO_EXPIRY_CATEGORIES = ['pantryStaples', 'dryGoods'];
 
 // Sample stock data — swap this out for real pantry data later.
 // Every item needs: name, category (must match a key above),
@@ -85,8 +94,38 @@ const PANTRY_ITEMS = [
   { name: 'Cold Drink',    category: 'beverages',  icon: 'bottle', meta: '2 L · Qty: 1',    days: 60 },
   { name: 'Orange Juice',  category: 'beverages',  icon: 'bottle', meta: '1 L · Qty: 1',    days: 7  },
 
-  { name: 'Salt',          category: 'others',     icon: 'jar',    meta: '1 kg · Qty: 1',   days: 300 },
-  { name: 'Sugar',         category: 'others',     icon: 'jar',    meta: '1 kg · Qty: 1',   days: 300 }
+  // 🏠 Pantry Staples — restock-focused, no expiry tracking
+  { name: 'Salt',           category: 'pantryStaples', icon: 'jar', meta: '1 kg · Qty: 1' },
+  { name: 'Sugar',          category: 'pantryStaples', icon: 'jar', meta: '1 kg · Qty: 1' },
+  { name: 'Baking Soda',    category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
+  { name: 'Baking Powder',  category: 'pantryStaples', icon: 'jar', meta: '100 g · Qty: 1' },
+  { name: 'Cornstarch',     category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
+  { name: 'Vinegar',        category: 'pantryStaples', icon: 'bottle', meta: '500 ml · Qty: 1' },
+  { name: 'Soy Sauce',      category: 'pantryStaples', icon: 'bottle', meta: '500 ml · Qty: 1' },
+  { name: 'Cooking Oil',    category: 'pantryStaples', icon: 'bottle', meta: '1 L · Qty: 1' },
+  { name: 'Ghee',           category: 'pantryStaples', icon: 'jar', meta: '500 g · Qty: 1' },
+  { name: 'Honey',          category: 'pantryStaples', icon: 'jar', meta: '250 g · Qty: 1' },
+  { name: 'Maple Syrup',    category: 'pantryStaples', icon: 'bottle', meta: '250 ml · Qty: 1' },
+  { name: 'Dry Spices',     category: 'pantryStaples', icon: 'jar', meta: 'Assorted · Qty: 1' },
+  { name: 'Spice Mixes',    category: 'pantryStaples', icon: 'jar', meta: 'Assorted · Qty: 1' },
+  { name: 'Tea',            category: 'pantryStaples', icon: 'jar', meta: '250 g · Qty: 1' },
+  { name: 'Coffee',         category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
+  { name: 'Cocoa Powder',   category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
+
+  // 🌾 Dry Goods — long-lasting, no expiry tracking
+  { name: 'Rice',           category: 'dryGoods', icon: 'rice', meta: '5 kg · Qty: 1' },
+  { name: 'Wheat Flour / Atta', category: 'dryGoods', icon: 'rice', meta: '5 kg · Qty: 1' },
+  { name: 'Maida',          category: 'dryGoods', icon: 'rice', meta: '1 kg · Qty: 1' },
+  { name: 'Semolina / Suji', category: 'dryGoods', icon: 'rice', meta: '1 kg · Qty: 1' },
+  { name: 'Poha',           category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
+  { name: 'Oats',           category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
+  { name: 'Dry Pasta',      category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
+  { name: 'Dry Noodles',    category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
+  { name: 'Dried Beans',    category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
+  { name: 'Lentils / Dal',  category: 'dryGoods', icon: 'rice', meta: '1 kg · Qty: 1' },
+  { name: 'Chickpeas',      category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
+  { name: 'Rajma',          category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
+  { name: 'Dry Peas',       category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' }
 ];
 
 function pantryDaysBadgeColor(days) {
@@ -97,12 +136,21 @@ function pantryDaysBadgeColor(days) {
 
 function renderPantryCard(item) {
   const bg = PANTRY_ICON_BG[item.icon] || 'green-soft';
-  const badgeColor = pantryDaysBadgeColor(item.days);
-  const dayLabel = item.days === 1 ? '1 day left' : item.days + ' days left';
+  const noExpiry = PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category) || item.days == null;
+
+  let badge = '';
+  if (!noExpiry) {
+    const badgeColor = pantryDaysBadgeColor(item.days);
+    const dayLabel = item.days === 1 ? '1 day left' : item.days + ' days left';
+    badge = `<span class="days-badge" style="color:${badgeColor};">${dayLabel}</span>`;
+  } else {
+    badge = `<span class="days-badge" style="color:#5C7A45;">In Stock</span>`;
+  }
+
   return `
     <div class="pantry-card">
       <div class="pantry-illustration" style="background:var(--${bg});">
-        <span class="days-badge" style="color:${badgeColor};">${dayLabel}</span>
+        ${badge}
         ${PANTRY_ICONS[item.icon] || ''}
       </div>
       <div class="pantry-name">${item.name}</div>
