@@ -233,55 +233,149 @@ function goToPage(pageId, evt) {
 }
 
 /* ---------- Upload dropzone (UI only for now) ---------- */
+/* ---------- Upload dropzone handling ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   renderPantryPage();
 
-  const dropzone = document.getElementById('uploadDropzone');
-  const fileInput = document.getElementById('fileInput');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileList = document.getElementById('uploadFileList');
 
-  if (!dropzone || !fileInput) return;
+  function setupDropzone(dropzoneId, fileInputId, uploadBtnId, fileListId) {
+    const dropzone = document.getElementById(dropzoneId);
+    const fileInput = document.getElementById(fileInputId);
+    const uploadBtn = document.getElementById(uploadBtnId);
+    const fileList = document.getElementById(fileListId);
 
-  // Click anywhere on the dropzone (or the button) opens the file picker
-  dropzone.addEventListener('click', () => fileInput.click());
-  uploadBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileInput.click();
-  });
+    if (!dropzone || !fileInput || !fileList) return;
 
-  // Drag & drop visual state
-  ['dragenter', 'dragover'].forEach(evtName => {
-    dropzone.addEventListener(evtName, (e) => {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-  });
-  ['dragleave', 'drop'].forEach(evtName => {
-    dropzone.addEventListener(evtName, (e) => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-    });
-  });
-  dropzone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files && files.length) handleFiles(files);
-  });
-
-  // File picker selection
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files && fileInput.files.length) {
-      handleFiles(fileInput.files);
-      fileInput.value = ''; // allow re-selecting the same file later
+    dropzone.addEventListener('click', () => fileInput.click());
+    if (uploadBtn) {
+      uploadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
     }
-  });
 
-  function handleFiles(fileArray) {
-    Array.from(fileArray).forEach(file => addFileRow(file));
-    // NOTE: actual upload / OCR / parsing logic will be wired up later.
+    ['dragenter', 'dragover'].forEach(evtName => {
+      dropzone.addEventListener(evtName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evtName => {
+      dropzone.addEventListener(evtName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length) handleFiles(files, fileList);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length) {
+        handleFiles(fileInput.files, fileList);
+        fileInput.value = '';
+      }
+    });
   }
 
-  function addFileRow(file) {
+  // Bind Dashboard dropzone and Scan Product page dropzone
+  setupDropzone('uploadDropzone', 'fileInput', 'uploadBtn', 'uploadFileList');
+  setupDropzone('scanDropzone', 'scanFileInput', 'scanUploadBtn', 'scanFileList');
+
+  function handleFiles(fileArray, fileList) {
+    Array.from(fileArray).forEach(file => {
+      const fileRow = addFileRow(file, fileList);
+      scanFile(file, fileRow);
+    });
+  }
+
+  async function scanFile(file, fileRow) {
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'ufi-status';
+    statusSpan.style.marginLeft = '10px';
+    statusSpan.style.color = '#3b82f6';
+    statusSpan.style.fontSize = '0.85rem';
+    statusSpan.textContent = ' 🔍 Scanning...';
+    fileRow.appendChild(statusSpan);
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64Image = e.target.result;
+      try {
+        // Try relative endpoint first, then http://localhost:3000/api/scan as fallback
+        let apiUrl = '/api/scan';
+        if (window.location.protocol === 'file:') {
+          apiUrl = 'http://localhost:3000/api/scan';
+        }
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Image })
+        });
+        const data = await response.json();
+        if (data.success && data.data) {
+          const item = data.data;
+          statusSpan.style.color = '#10b981';
+          statusSpan.textContent = ` ✅ Scanned: ${item.brand ? item.brand + ' ' : ''}${item.name} (${item.quantity || ''} ${item.unit || ''})`;
+          
+          // Dynamically add card to Pantry UI
+          addPantryCardToUI(item);
+        } else {
+          statusSpan.style.color = '#ef4444';
+          statusSpan.textContent = ' ❌ Scan failed: ' + (data.error || 'Server error');
+        }
+      } catch (err) {
+        console.error('Scan API error:', err);
+        statusSpan.style.color = '#ef4444';
+        statusSpan.textContent = ' ❌ Scan error: Ensure backend server is running';
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function addPantryCardToUI(item) {
+    const pantryRow = document.getElementById('pantryScroll');
+    if (!pantryRow) return;
+
+    const card = document.createElement('div');
+    card.className = 'pantry-card';
+    
+    let daysBadge = 'Fresh 🟢';
+    if (item.expiry_date) {
+      daysBadge = item.expiry_date;
+    }
+
+    const qtyText = item.quantity ? `${item.quantity} ${item.unit || ''}` : '1 pack';
+    const displayName = item.brand ? `${item.brand} ${item.name}` : item.name;
+
+    card.innerHTML = `
+      <div class="pantry-illustration" style="background:var(--amber-soft);">
+        <span class="days-badge" style="color:#5C7A45;">${daysBadge}</span>
+        <svg width="52" height="60" viewBox="0 0 52 60" fill="none">
+          <path d="M10 10h32l2 6v34a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V16l2-6z" fill="#F6DDA0" stroke="#C98A2E" stroke-width="1.8"/>
+          <path d="M10 10c2-5 6-8 16-8s14 3 16 8" fill="none" stroke="#C98A2E" stroke-width="1.8"/>
+          <path d="M16 28h20M16 36h20M16 44h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="pantry-name">${escapeHtml(displayName)}</div>
+      <div class="pantry-meta">${escapeHtml(qtyText)} &nbsp;·&nbsp; Qty: 1</div>
+    `;
+
+    pantryRow.insertBefore(card, pantryRow.firstChild);
+
+    // Update total items count in stat card
+    const totalItemsEl = document.querySelector('.stat-value');
+    if (totalItemsEl) {
+      const currentVal = parseInt(totalItemsEl.textContent, 10);
+      if (!isNaN(currentVal)) {
+        totalItemsEl.textContent = currentVal + 1;
+      }
+    }
+  }
+
+  function addFileRow(file, fileList) {
     const row = document.createElement('div');
     row.className = 'upload-file-item';
     row.innerHTML = `
@@ -299,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     row.querySelector('.ufi-remove').addEventListener('click', () => row.remove());
     fileList.appendChild(row);
+    return row;
   }
 
   function formatSize(bytes) {
