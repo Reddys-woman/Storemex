@@ -12,6 +12,9 @@
    ============================================================ */
 
 // Shared illustration markup, keyed by icon type.
+
+const CURRENT_USER_ID = '6b06304b-cf7a-4f97-aa30-7d7a75d032d2'; // TODO: replace with real auth later
+
 const PANTRY_ICONS = {
   leaf: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/></svg>`,
   apple: `<svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="36" r="18" fill="#E8694E" stroke="#C24A32" stroke-width="1.8"/><path d="M30 18c0-4 1-6 3-8" stroke="#8C6A34" stroke-width="2" stroke-linecap="round"/><path d="M33 12c3-2 6-2 8 0-2 3-6 3-8 0z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.4"/></svg>`,
@@ -783,7 +786,47 @@ document.addEventListener('click', (e) => {
 
 /* ---------- Upload dropzone (UI only for now) ---------- */
 /* ---------- Upload dropzone handling ---------- */
+
+async function loadPantryFromDatabase() {
+  try {
+    const response = await fetch(`/products/${CURRENT_USER_ID}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to load pantry');
+
+    PANTRY_ITEMS.length = 0; // clear the mock seed data
+    data.products.forEach(product => {
+      const category = (product.category || 'others').toLowerCase();
+      const validCategory = PANTRY_CATEGORIES.some(c => c.key === category) ? category : 'others';
+      const qty = product.quantity ?? 1;
+      const unit = product.unit || 'pcs';
+      let days;
+      if (product.expiry_date) {
+        const ms = new Date(product.expiry_date) - new Date();
+        days = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+      }
+      PANTRY_ITEMS.push({
+        id: product.id,
+        name: product.brand ? `${product.brand} ${product.name}` : product.name,
+        category: validCategory,
+        icon: iconForCategory(validCategory),
+        size: `${formatQty(qty)} ${unit}`,
+        unit, qty,
+        ...(days !== undefined ? { days } : {})
+      });
+    });
+  } catch (err) {
+    console.error('❌ Failed to load pantry from database:', err);
+  } finally {
+    renderPantryPage();
+    renderPantryGlance();
+    renderRecipes();
+    renderAlerts();
+    renderStats();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  loadPantryFromDatabase();
   renderPantryPage();
   renderPantryGlance();
   renderRecipes();
@@ -873,9 +916,33 @@ document.addEventListener('DOMContentLoaded', () => {
           const item = data.data;
           statusSpan.style.color = '#10b981';
           statusSpan.textContent = ` ✅ Scanned: ${item.brand ? item.brand + ' ' : ''}${item.name} (${item.quantity || ''} ${item.unit || ''})`;
-          
-          // Dynamically add card to Pantry UI
-          addPantryCardToUI(item);
+
+          // Save to Supabase, then reflect the saved product in PANTRY_ITEMS
+          try {
+            const saveResponse = await fetch('/products', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: CURRENT_USER_ID,
+                name: item.name,
+                brand: item.brand || null,
+                category: item.category || null,
+                quantity: item.quantity ?? null,
+                unit: item.unit || null,
+                expiry_date: item.expiry_date || null,
+                ai_confidence: item.confidence ?? null
+              })
+            });
+            const savedData = await saveResponse.json();
+            if (!saveResponse.ok) {
+              throw new Error(savedData.error || 'Failed to save product');
+            }
+            addSavedProductToPantryItems(savedData.product);
+          } catch (saveErr) {
+            console.error('Save to Supabase failed:', saveErr);
+            statusSpan.style.color = '#ef4444';
+            statusSpan.textContent += ' — ⚠️ not saved to database';
+          }
         } else {
           statusSpan.style.color = '#ef4444';
           statusSpan.textContent = ' ❌ Scan failed: ' + (data.error || 'Server error');
@@ -889,44 +956,35 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsDataURL(file);
   }
 
-  function addPantryCardToUI(item) {
-    const pantryRow = document.getElementById('pantryScroll');
-    if (!pantryRow) return;
+  function addSavedProductToPantryItems(product) {
+    const category = (product.category || 'others').toLowerCase();
+    const validCategory = PANTRY_CATEGORIES.some(c => c.key === category) ? category : 'others';
+    const qty = product.quantity ?? 1;
+    const unit = product.unit || 'pcs';
 
-    const card = document.createElement('div');
-    card.className = 'pantry-card';
-    
-    let daysBadge = 'Fresh 🟢';
-    if (item.expiry_date) {
-      daysBadge = item.expiry_date;
+    let days;
+    if (product.expiry_date) {
+      const ms = new Date(product.expiry_date) - new Date();
+      days = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
     }
 
-    const qtyText = item.quantity ? `${item.quantity} ${item.unit || ''}` : '1 pack';
-    const displayName = item.brand ? `${item.brand} ${item.name}` : item.name;
+    PANTRY_ITEMS.push({
+      id: product.id, // real DB id — needed later for consume/delete
+      name: product.brand ? `${product.brand} ${product.name}` : product.name,
+      category: validCategory,
+      icon: iconForCategory(validCategory),
+      size: `${formatQty(qty)} ${unit}`,
+      unit,
+      qty,
+      ...(days !== undefined ? { days } : {})
+    });
 
-    card.innerHTML = `
-      <div class="pantry-illustration" style="background:var(--amber-soft);">
-        <span class="days-badge" style="color:#5C7A45;">${daysBadge}</span>
-        <svg width="52" height="60" viewBox="0 0 52 60" fill="none">
-          <path d="M10 10h32l2 6v34a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V16l2-6z" fill="#F6DDA0" stroke="#C98A2E" stroke-width="1.8"/>
-          <path d="M10 10c2-5 6-8 16-8s14 3 16 8" fill="none" stroke="#C98A2E" stroke-width="1.8"/>
-          <path d="M16 28h20M16 36h20M16 44h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="pantry-name">${escapeHtml(displayName)}</div>
-      <div class="pantry-meta">${escapeHtml(qtyText)} &nbsp;·&nbsp; Qty: 1</div>
-    `;
-
-    pantryRow.insertBefore(card, pantryRow.firstChild);
-
-    // Update total items count in stat card
-    const totalItemsEl = document.querySelector('.stat-value');
-    if (totalItemsEl) {
-      const currentVal = parseInt(totalItemsEl.textContent, 10);
-      if (!isNaN(currentVal)) {
-        totalItemsEl.textContent = currentVal + 1;
-      }
-    }
+    renderPantryPage();
+    renderPantryGlance();
+    renderRecipes();
+    renderAlerts();
+    renderStats();
+    addHistoryEntry(`${product.name} was scanned and added to the pantry`);
   }
 
   function addFileRow(file, fileList) {
