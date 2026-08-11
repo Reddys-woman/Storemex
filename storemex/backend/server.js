@@ -1,11 +1,29 @@
+const path = require('path');
 const express = require('express');
 const supabase = require('./supabaseClient');
+const { smartScan } = require('./ai');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 app.get('/', (req, res) => {
   res.send('SmartPantry backend is running!');
+});
+
+// AI Product & Barcode Scan API
+app.post('/api/scan', async (req, res) => {
+  try {
+    const { image } = req.body;
+    if (!image) {
+      return res.status(400).json({ error: 'No image provided' });
+    }
+    const result = await smartScan(image);
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('Scan API Error:', error);
+    return res.status(500).json({ error: error.message });
+  }
 });
 app.post('/signup', async (req, res) => {
   const { email, password } = req.body;

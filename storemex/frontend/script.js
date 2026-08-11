@@ -88,8 +88,46 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function handleFiles(fileArray) {
-    Array.from(fileArray).forEach(file => addFileRow(file));
-    // NOTE: actual upload / OCR / parsing logic will be wired up later.
+    Array.from(fileArray).forEach(file => {
+      const fileRow = addFileRow(file);
+      scanFile(file, fileRow);
+    });
+  }
+
+  async function scanFile(file, fileRow) {
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'ufi-status';
+    statusSpan.style.marginLeft = '10px';
+    statusSpan.style.color = '#3b82f6';
+    statusSpan.style.fontSize = '0.85rem';
+    statusSpan.textContent = ' 🔍 Scanning...';
+    fileRow.appendChild(statusSpan);
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64Image = e.target.result;
+      try {
+        const response = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Image })
+        });
+        const data = await response.json();
+        if (data.success && data.data) {
+          const item = data.data;
+          statusSpan.style.color = '#10b981';
+          statusSpan.textContent = ` ✅ Scanned: ${item.brand} ${item.name} (${item.quantity || ''} ${item.unit || ''})`;
+        } else {
+          statusSpan.style.color = '#ef4444';
+          statusSpan.textContent = ' ❌ Scan failed';
+        }
+      } catch (err) {
+        console.error('Scan API error:', err);
+        statusSpan.style.color = '#ef4444';
+        statusSpan.textContent = ' ❌ Scan error';
+      }
+    };
+    reader.readAsDataURL(file);
   }
 
   function addFileRow(file) {
@@ -110,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     row.querySelector('.ufi-remove').addEventListener('click', () => row.remove());
     fileList.appendChild(row);
+    return row;
   }
 
   function formatSize(bytes) {
