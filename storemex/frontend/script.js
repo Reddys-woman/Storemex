@@ -1,7 +1,7 @@
 /* ============================================================
    storemex dashboard — script.js
-   Handles: horizontal scroll rows, sidebar page switching,
-   and the upload dropzone (UI only, no backend yet).
+   Handles: pantry data, alerts, shopping swipe deck,
+   sidebar page switching, and dashboard stats.
    ============================================================ */
 
 /* ============================================================
@@ -122,16 +122,27 @@ function formatMeta(item) {
    match whatever is actually in PANTRY_ITEMS.
    ============================================================ */
 
-// Adjustable, not hardcoded — defaults shown here, but both are
-// changeable at runtime from the Alerts page (see the threshold
-// controls + applyThresholds() further down) and every stat/badge/
-// alert reads these two variables live, so a change takes effect
-// everywhere immediately.
-let EXPIRING_SOON_WITHIN_DAYS = 3;
-let LOW_STOCK_QTY_THRESHOLD = 2; // qty at or below this counts as "low stock"
+// Alert thresholds (fixed):
+// - Expiring: days left ≤ 5
+// - Low stock (unit-aware): qty < 1.5 L / 1500 ml / 1.5 kg / 1500 g / 5 units / 2 pack|pcs
+const EXPIRING_SOON_WITHIN_DAYS = 5;
 
 function isNoExpiryItem(item) {
   return PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category) || item.days == null;
+}
+
+function isLowStock(item) {
+  if (!item || item.qty == null || item.qty <= 0) return false; // qty 0 is "Unavailable"
+  const u = String(item.unit || '').toLowerCase();
+  const q = Number(item.qty);
+  if (u === 'l' || u === 'litre' || u === 'liter') return q < 1.5;
+  if (u === 'ml') return q < 1500;
+  if (u === 'kg') return q < 1.5;
+  if (u === 'g') return q < 1500;
+  if (u === 'units' || u === 'unit') return q < 5;
+  if (u === 'pack' || u === 'packet' || u === 'pcs' || u === 'piece' || u === 'pieces') return q < 2;
+  // Unknown unit — treat as low when below 2
+  return q < 2;
 }
 
 function getExpiringSoonItems() {
@@ -142,7 +153,7 @@ function getExpiringSoonItems() {
 
 function getRestockItems() {
   return PANTRY_ITEMS
-    .filter(i => i.qty > 0 && i.qty <= LOW_STOCK_QTY_THRESHOLD)
+    .filter(i => isLowStock(i))
     .sort((a, b) => a.qty - b.qty);
 }
 
@@ -246,26 +257,6 @@ function renderAlertGroups(limitPerGroup) {
     alertSection('Unavailable', '#9B968A', unavailableCards);
 
   return { html, total: expiring.length + restock.length + unavailable.length };
-}
-
-// Reads the two threshold inputs on the Alerts page, applies them,
-// and re-renders everything that depends on them (stats, badges,
-// alerts, the notification bell) so the change is reflected app-wide
-// immediately — no page reload, no hardcoded number involved.
-function applyThresholds() {
-  const expiringInput = document.getElementById('expiringThresholdInput');
-  const lowStockInput = document.getElementById('lowStockThresholdInput');
-
-  const expiringVal = expiringInput ? parseInt(expiringInput.value, 10) : NaN;
-  const lowStockVal = lowStockInput ? parseInt(lowStockInput.value, 10) : NaN;
-
-  if (!isNaN(expiringVal) && expiringVal >= 0) EXPIRING_SOON_WITHIN_DAYS = expiringVal;
-  if (!isNaN(lowStockVal) && lowStockVal >= 0) LOW_STOCK_QTY_THRESHOLD = lowStockVal;
-
-  renderPantryPage();
-  renderPantryGlance();
-  renderAlerts();
-  renderStats();
 }
 
 function renderAlerts() {
@@ -533,7 +524,7 @@ function shoppingStatusForItem(item) {
     const label = item.days <= 0 ? 'Expires Today' : item.days === 1 ? 'Expires in 1 day' : `Expires in ${item.days} days`;
     return { label, color: '#E8694E' };
   }
-  if (item.qty <= LOW_STOCK_QTY_THRESHOLD) return { label: 'Low Stock', color: '#E8C23D' };
+  if (isLowStock(item)) return { label: 'Low Stock', color: '#E8C23D' };
   return { label: 'In Stock', color: '#5C7A45' };
 }
 
@@ -1079,7 +1070,6 @@ document.addEventListener('click', (e) => {
   panel.style.display = 'none';
 });
 
-/* ---------- Upload dropzone (UI only for now) ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   renderPantryPage();
   renderPantryGlance();
@@ -1087,87 +1077,4 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAlerts();
   renderStats();
   renderHistoryPage();
-
-  // Reflect the live threshold values in their input fields.
-  const expiringInput = document.getElementById('expiringThresholdInput');
-  const lowStockInput = document.getElementById('lowStockThresholdInput');
-  if (expiringInput) expiringInput.value = EXPIRING_SOON_WITHIN_DAYS;
-  if (lowStockInput) lowStockInput.value = LOW_STOCK_QTY_THRESHOLD;
-
-  const dropzone = document.getElementById('uploadDropzone');
-  const fileInput = document.getElementById('fileInput');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileList = document.getElementById('uploadFileList');
-
-  if (!dropzone || !fileInput) return;
-
-  // Click anywhere on the dropzone (or the button) opens the file picker
-  dropzone.addEventListener('click', () => fileInput.click());
-  uploadBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileInput.click();
-  });
-
-  // Drag & drop visual state
-  ['dragenter', 'dragover'].forEach(evtName => {
-    dropzone.addEventListener(evtName, (e) => {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-  });
-  ['dragleave', 'drop'].forEach(evtName => {
-    dropzone.addEventListener(evtName, (e) => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-    });
-  });
-  dropzone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files && files.length) handleFiles(files);
-  });
-
-  // File picker selection
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files && fileInput.files.length) {
-      handleFiles(fileInput.files);
-      fileInput.value = ''; // allow re-selecting the same file later
-    }
-  });
-
-  function handleFiles(fileArray) {
-    Array.from(fileArray).forEach(file => addFileRow(file));
-    // NOTE: actual upload / OCR / parsing logic will be wired up later.
-  }
-
-  function addFileRow(file) {
-    const row = document.createElement('div');
-    row.className = 'upload-file-item';
-    row.innerHTML = `
-      <div class="ufi-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <path d="M14 2v6h6"/>
-        </svg>
-      </div>
-      <span class="ufi-name">${escapeHtml(file.name)}</span>
-      <span class="ufi-size">${formatSize(file.size)}</span>
-      <button class="ufi-remove" type="button" title="Remove">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    `;
-    row.querySelector('.ufi-remove').addEventListener('click', () => row.remove());
-    fileList.appendChild(row);
-  }
-
-  function formatSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
 });
