@@ -497,6 +497,209 @@
     color:var(--ink);
   }
 
+  /* ---------- SHOPPING LIST — swipe deck ---------- */
+  .shopping-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:20px;
+    margin-bottom:8px;
+  }
+  .shopping-header-art{
+    flex-shrink:0;
+    opacity:0.95;
+  }
+
+  .shopping-layout{
+    display:flex;
+    gap:12px;
+    align-items:stretch;
+    justify-content:center;
+    position:relative;
+    min-height:420px;
+    margin-top:8px;
+  }
+
+  /* Side decorations */
+  .shopping-deco{
+    width:110px;
+    flex-shrink:0;
+    position:relative;
+    pointer-events:none;
+  }
+  .shopping-deco-left{margin-right:4px;}
+  .shopping-deco-right{margin-left:4px;}
+
+  .deco-blob{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(28px);
+    opacity:0.55;
+  }
+  .deco-blob-1{
+    width:140px;height:140px;
+    background:var(--green-soft);
+    top:20%;left:-20px;
+  }
+  .deco-blob-2{
+    width:120px;height:120px;
+    background:var(--orange-soft);
+    top:45%;right:-10px;
+  }
+
+  .deco-icon-float{
+    position:absolute;
+    animation:floatY 5.5s ease-in-out infinite;
+    animation-delay:var(--delay, 0s);
+    opacity:0.9;
+    filter:drop-shadow(0 6px 10px rgba(43,42,31,0.08));
+  }
+  @keyframes floatY{
+    0%,100%{transform:translateY(0) rotate(-2deg);}
+    50%{transform:translateY(-12px) rotate(3deg);}
+  }
+
+  .swipe-deck-wrap{
+    flex:0 1 360px;
+    min-width:280px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    position:relative;
+    padding-top:4px;
+    z-index:2;
+  }
+  .swipe-progress{
+    font-size:12px;font-weight:700;color:var(--ink-soft);
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:5px 14px;
+    border-radius:999px;
+    box-shadow:var(--shadow);
+  }
+  .swipe-zone-hint{
+    position:absolute;top:140px;
+    font-size:11px;font-weight:700;color:var(--ink-faint);
+    text-transform:uppercase;letter-spacing:.04em;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  .swipe-zone-hint.left{left:-8px;transform:translateX(-100%);}
+  .swipe-zone-hint.right{right:-8px;transform:translateX(100%);}
+
+  .swipe-deck{position:relative;width:320px;height:340px;max-width:90vw;}
+  .swipe-card{
+    position:absolute;inset:0;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-md);
+    padding:0;
+    display:flex;flex-direction:column;
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+    overflow:hidden;
+  }
+  .swipe-card.dragging{cursor:grabbing;}
+  .swipe-card.stack-1{transform:translateY(12px) scale(.96);opacity:.85;pointer-events:none;}
+  .swipe-card.stack-2{transform:translateY(22px) scale(.92);opacity:.55;pointer-events:none;}
+
+  .swipe-card-illustration{
+    height:130px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    flex-shrink:0;
+  }
+  .swipe-card-illustration svg{
+    width:72px;height:72px;
+    filter:drop-shadow(0 4px 8px rgba(43,42,31,0.1));
+  }
+  .swipe-card-badge{
+    position:absolute;
+    top:12px;left:12px;
+    font-size:10.5px;font-weight:700;color:#fff;
+    padding:4px 10px;border-radius:999px;
+    z-index:2;
+  }
+  .swipe-card-body{
+    padding:16px 20px 20px;
+    display:flex;
+    flex-direction:column;
+    flex:1;
+  }
+  .swipe-card-category{
+    font-size:11px;color:var(--ink-faint);font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .swipe-card-name{font-size:20px;font-weight:800;margin-top:4px;margin-bottom:auto;}
+
+  .swipe-qty-row{display:flex;align-items:center;gap:8px;margin-top:16px;}
+  .swipe-qty-btn{
+    width:34px;height:34px;border-radius:10px;border:1px solid var(--border);
+    background:var(--card-soft);font-size:18px;font-weight:700;line-height:1;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  }
+  .swipe-qty-btn:hover{background:var(--green-soft);}
+  .swipe-qty-input{
+    width:64px;text-align:center;padding:7px 4px;border-radius:10px;
+    border:1px solid var(--border);font-size:14px;font-family:inherit;font-weight:700;color:var(--ink);
+  }
+  .swipe-unit-select{
+    padding:7px 8px;border-radius:10px;border:1px solid var(--border);
+    font-size:12.5px;font-family:inherit;background:var(--card);color:var(--ink);flex-shrink:0;
+  }
+
+  .swipe-overlay-label{
+    position:absolute;top:18px;font-size:13px;font-weight:800;letter-spacing:.04em;
+    padding:6px 12px;border-radius:8px;opacity:0;
+    border:2px solid;text-transform:uppercase;pointer-events:none;
+    z-index:3;
+  }
+  .swipe-overlay-label.left{left:18px;color:#C24A32;border-color:#C24A32;transform:rotate(-8deg);}
+  .swipe-overlay-label.right{right:18px;color:#5C7A45;border-color:#5C7A45;transform:rotate(8deg);}
+
+  .swipe-actions{display:flex;gap:12px;}
+  .swipe-action-btn{
+    padding:10px 18px;border-radius:12px;border:1px solid var(--border);
+    font-size:13px;font-weight:700;cursor:pointer;background:var(--card);font-family:inherit;
+    box-shadow:var(--shadow);
+    transition:background .15s, border-color .15s, color .15s, transform .12s;
+  }
+  .swipe-action-btn:active{transform:scale(0.97);}
+  .swipe-action-btn.skip:hover{background:#FCEAE5;border-color:#E8694E;color:#C24A32;}
+  .swipe-action-btn.buy:hover{background:var(--green-soft);border-color:#5C7A45;color:#5C7A45;}
+
+  .shopping-results{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
+  .result-column{
+    flex:1;min-width:260px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:18px;
+    box-shadow:var(--shadow);
+  }
+  .result-column h3{font-size:15px;font-weight:800;margin-bottom:12px;}
+  .result-row{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;
+  }
+  .result-row:last-child{border-bottom:none;}
+  .result-row-name{font-weight:700;}
+  .result-row-cat{color:var(--ink-faint);font-size:11.5px;}
+  .result-row-qty{font-weight:700;color:var(--green);white-space:nowrap;}
+  .result-empty{font-size:12.5px;color:var(--ink-faint);}
+
+  /* Hide side decos on narrow screens so the deck stays usable */
+  @media (max-width:900px){
+    .shopping-deco{display:none;}
+    .swipe-zone-hint.left{left:4px;transform:none;}
+    .swipe-zone-hint.right{right:4px;transform:none;}
+  }
+
   /* ---------- PAGE EMPTY STATE ---------- */
   .page-empty{
     background:var(--card);

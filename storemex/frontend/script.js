@@ -482,6 +482,306 @@ function performSearch(rawValue, sourceId) {
   renderPantrySearchResults(q);
 }
 
+/* ============================================================
+   SHOPPING LIST — swipe deck
+   Pulls items that actually need attention (unavailable, low
+   stock, or expiring soon) into a card stack. Each card is
+   decided by swiping right ("Shopping List", with the qty/unit
+   chosen on the card) or left ("Buy Later") — via the on-card
+   buttons or a manual mouse/touch drag.
+   A hand-gesture recognizer (separate branch) can optionally
+   call window.handleGestureSwipe('left' | 'right'), which routes
+   into the same decideCurrentCard() flow.
+   ============================================================ */
+
+const SHOPPING_UNIT_OPTIONS = [
+  { value: 'g',     label: 'g' },
+  { value: 'kg',    label: 'kg' },
+  { value: 'ml',    label: 'ml' },
+  { value: 'L',     label: 'L' },
+  { value: 'units', label: 'unit' },
+  { value: 'pack',  label: 'packet' },
+  { value: 'pcs',   label: 'piece' }
+];
+
+let SWIPE_DECK = [];          // cards still to review — {name, category, categoryLabel, icon, statusLabel, statusColor, qty, unit}
+let SWIPE_INDEX = 0;          // index of the current top card
+let SHOPPING_RESULT = [];     // decided "buy now" items — {name, category, qty, unit}
+let BUY_LATER_RESULT = [];    // decided "buy later" items — {name, category}
+let shoppingDeckInitialized = false;
+let currentDragHandlers = null;
+
+// Items worth reviewing for the shopping list — anything unavailable,
+// low on stock, or expiring soon. Fully-stocked items don't need a
+// shopping decision, so they're left out of the deck entirely.
+function getShoppingCandidates() {
+  const combined = [...getUnavailableItems(), ...getExpiringSoonItems(), ...getRestockItems()];
+  const seen = new Set();
+  const unique = [];
+  combined.forEach(item => {
+    if (!seen.has(item.name)) {
+      seen.add(item.name);
+      unique.push(item);
+    }
+  });
+  return unique;
+}
+
+function shoppingStatusForItem(item) {
+  if (item.qty === 0) return { label: 'Unavailable', color: 'var(--sidebar-text-dim)' };
+  if (!isNoExpiryItem(item) && item.days <= EXPIRING_SOON_WITHIN_DAYS) {
+    const label = item.days <= 0 ? 'Expires Today' : item.days === 1 ? 'Expires in 1 day' : `Expires in ${item.days} days`;
+    return { label, color: '#E8694E' };
+  }
+  if (item.qty <= LOW_STOCK_QTY_THRESHOLD) return { label: 'Low Stock', color: '#E8C23D' };
+  return { label: 'In Stock', color: '#5C7A45' };
+}
+
+function unitLabel(unit) {
+  const found = SHOPPING_UNIT_OPTIONS.find(u => u.value === unit);
+  return found ? found.label : unit;
+}
+
+function initShoppingSwipe() {
+  SWIPE_DECK = getShoppingCandidates().map(item => {
+    const status = shoppingStatusForItem(item);
+    const catInfo = PANTRY_CATEGORIES.find(c => c.key === item.category);
+    const iconKey = catInfo ? catInfo.icon : (item.icon || 'jar');
+    return {
+      name: item.name,
+      category: item.category,
+      categoryLabel: catInfo ? catInfo.label : item.category,
+      icon: iconKey,
+      statusLabel: status.label,
+      statusColor: status.color,
+      qty: 1,
+      unit: item.unit || 'units'
+    };
+  });
+  SWIPE_INDEX = 0;
+  SHOPPING_RESULT = [];
+  BUY_LATER_RESULT = [];
+  shoppingDeckInitialized = true;
+  renderSwipeDeck();
+}
+
+function resetShoppingSwipe() {
+  shoppingDeckInitialized = false;
+  initShoppingSwipe();
+}
+
+function renderSwipeDeck() {
+  const deckEl = document.getElementById('swipeDeck');
+  const progressEl = document.getElementById('swipeProgress');
+  const resultsEl = document.getElementById('shoppingResults');
+  const emptyEl = document.getElementById('shoppingEmptyState');
+  const layoutEl = document.getElementById('shoppingLayout');
+  if (!deckEl) return;
+
+  // No items need shopping at all right now.
+  if (SWIPE_DECK.length === 0) {
+    if (layoutEl) layoutEl.style.display = 'none';
+    if (resultsEl) resultsEl.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'flex';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  // Every card has been decided — show the two final lists.
+  if (SWIPE_INDEX >= SWIPE_DECK.length) {
+    if (layoutEl) layoutEl.style.display = 'none';
+    renderShoppingResults();
+    if (resultsEl) resultsEl.style.display = 'flex';
+    return;
+  }
+
+  if (layoutEl) layoutEl.style.display = 'flex';
+  if (resultsEl) resultsEl.style.display = 'none';
+
+  if (progressEl) progressEl.textContent = `${SWIPE_INDEX} / ${SWIPE_DECK.length} reviewed`;
+
+  const visible = SWIPE_DECK.slice(SWIPE_INDEX, SWIPE_INDEX + 3);
+  deckEl.innerHTML = visible.map((item, i) => renderSwipeCard(item, i, SWIPE_INDEX + i)).join('');
+
+  const topCard = deckEl.querySelector('.swipe-card[data-top="true"]');
+  if (topCard) attachDragHandlers(topCard);
+}
+
+function renderSwipeCard(item, stackPos, globalIdx) {
+  const stackClass = stackPos === 0 ? '' : `stack-${stackPos}`;
+  const isTop = stackPos === 0;
+  const iconKey = item.icon || 'jar';
+  const bg = PANTRY_ICON_BG[iconKey] || 'green-soft';
+  const iconSvg = PANTRY_ICONS[iconKey] || PANTRY_ICONS.jar;
+  return `
+    <div class="swipe-card ${stackClass}" data-top="${isTop}" data-idx="${globalIdx}" style="z-index:${10 - stackPos};">
+      <div class="swipe-overlay-label left">BUY LATER</div>
+      <div class="swipe-overlay-label right">SHOPPING LIST</div>
+      <div class="swipe-card-illustration" style="background:var(--${bg});">
+        <div class="swipe-card-badge" style="background:${item.statusColor};">${item.statusLabel}</div>
+        ${iconSvg}
+      </div>
+      <div class="swipe-card-body">
+        <div class="swipe-card-category">${item.categoryLabel}</div>
+        <div class="swipe-card-name">${item.name}</div>
+        <div class="swipe-qty-row">
+          <button type="button" class="swipe-qty-btn" onclick="adjustSwipeQty(${globalIdx}, -1)">−</button>
+          <input type="number" class="swipe-qty-input" id="swipeQtyInput-${globalIdx}" value="${formatQty(item.qty)}" min="0" step="0.1" oninput="setSwipeQty(${globalIdx}, this.value)">
+          <button type="button" class="swipe-qty-btn" onclick="adjustSwipeQty(${globalIdx}, 1)">+</button>
+          <select class="swipe-unit-select" onchange="setSwipeUnit(${globalIdx}, this.value)">
+            ${SHOPPING_UNIT_OPTIONS.map(u => `<option value="${u.value}" ${u.value === item.unit ? 'selected' : ''}>${u.label}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>`;
+}
+
+function adjustSwipeQty(idx, delta) {
+  const item = SWIPE_DECK[idx];
+  if (!item) return;
+  item.qty = Math.max(0, Math.round((item.qty + delta) * 100) / 100);
+  const input = document.getElementById('swipeQtyInput-' + idx);
+  if (input) input.value = formatQty(item.qty);
+}
+
+function setSwipeQty(idx, value) {
+  const item = SWIPE_DECK[idx];
+  if (!item) return;
+  const n = parseFloat(value);
+  item.qty = isNaN(n) || n < 0 ? 0 : n;
+}
+
+function setSwipeUnit(idx, unit) {
+  const item = SWIPE_DECK[idx];
+  if (!item) return;
+  item.unit = unit;
+}
+
+// Decides the current top card — used by the on-card buttons, the
+// manual drag release, AND the gesture-recognizer hook below, so all
+// three input methods funnel through one place.
+function decideCurrentCard(direction) {
+  if (SWIPE_INDEX >= SWIPE_DECK.length) return;
+  const item = SWIPE_DECK[SWIPE_INDEX];
+
+  animateCardOut(direction, () => {
+    if (direction === 'right') {
+      SHOPPING_RESULT.push({ name: item.name, category: item.categoryLabel, qty: item.qty, unit: item.unit });
+    } else {
+      BUY_LATER_RESULT.push({ name: item.name, category: item.categoryLabel });
+    }
+    SWIPE_INDEX++;
+    renderSwipeDeck();
+  });
+}
+
+function animateCardOut(direction, callback) {
+  const deckEl = document.getElementById('swipeDeck');
+  const topCard = deckEl ? deckEl.querySelector('.swipe-card[data-top="true"]') : null;
+  if (!topCard) { callback(); return; }
+
+  topCard.style.transition = 'transform .3s ease, opacity .3s ease';
+  topCard.style.transform = `translate(${direction === 'right' ? 640 : -640}px, -40px) rotate(${direction === 'right' ? 25 : -25}deg)`;
+  topCard.style.opacity = '0';
+  setTimeout(callback, 260);
+}
+
+function renderShoppingResults() {
+  const shopEl = document.getElementById('shoppingListResult');
+  const laterEl = document.getElementById('buyLaterResult');
+
+  if (shopEl) {
+    shopEl.innerHTML = SHOPPING_RESULT.length
+      ? SHOPPING_RESULT.map(i => `
+        <div class="result-row">
+          <div><div class="result-row-name">${i.name}</div><div class="result-row-cat">${i.category}</div></div>
+          <span class="result-row-qty">${formatQty(i.qty)} ${unitLabel(i.unit)}</span>
+        </div>`).join('')
+      : '<p class="result-empty">Nothing added yet.</p>';
+  }
+
+  if (laterEl) {
+    laterEl.innerHTML = BUY_LATER_RESULT.length
+      ? BUY_LATER_RESULT.map(i => `
+        <div class="result-row">
+          <div><div class="result-row-name">${i.name}</div><div class="result-row-cat">${i.category}</div></div>
+        </div>`).join('')
+      : '<p class="result-empty">Nothing here yet.</p>';
+  }
+}
+
+/* ---------- Manual drag (mouse + touch) ---------- */
+function attachDragHandlers(cardEl) {
+  if (currentDragHandlers) {
+    document.removeEventListener('mousemove', currentDragHandlers.move);
+    document.removeEventListener('mouseup', currentDragHandlers.up);
+  }
+
+  let dragging = false, startX = 0, startY = 0, currentX = 0, currentY = 0;
+  const threshold = 110;
+
+  const setOverlayOpacity = (dx) => {
+    const leftLabel = cardEl.querySelector('.swipe-overlay-label.left');
+    const rightLabel = cardEl.querySelector('.swipe-overlay-label.right');
+    if (leftLabel) leftLabel.style.opacity = dx < 0 ? Math.min(1, Math.abs(dx) / 100) : 0;
+    if (rightLabel) rightLabel.style.opacity = dx > 0 ? Math.min(1, dx / 100) : 0;
+  };
+
+  const onPointerDown = (e) => {
+    dragging = true;
+    const point = e.touches ? e.touches[0] : e;
+    startX = point.clientX;
+    startY = point.clientY;
+    cardEl.style.transition = 'none';
+    cardEl.classList.add('dragging');
+  };
+
+  const onPointerMove = (e) => {
+    if (!dragging) return;
+    const point = e.touches ? e.touches[0] : e;
+    currentX = point.clientX - startX;
+    currentY = point.clientY - startY;
+    cardEl.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${currentX / 14}deg)`;
+    setOverlayOpacity(currentX);
+  };
+
+  const onPointerUp = () => {
+    if (!dragging) return;
+    dragging = false;
+    cardEl.classList.remove('dragging');
+    cardEl.style.transition = 'transform .3s ease, opacity .3s ease';
+
+    if (currentX > threshold) {
+      decideCurrentCard('right');
+    } else if (currentX < -threshold) {
+      decideCurrentCard('left');
+    } else {
+      cardEl.style.transform = 'translate(0,0) rotate(0deg)';
+      setOverlayOpacity(0);
+    }
+    currentX = 0;
+    currentY = 0;
+  };
+
+  cardEl.addEventListener('mousedown', onPointerDown);
+  cardEl.addEventListener('touchstart', onPointerDown, { passive: true });
+  cardEl.addEventListener('touchmove', onPointerMove, { passive: true });
+  cardEl.addEventListener('touchend', onPointerUp);
+  document.addEventListener('mousemove', onPointerMove);
+  document.addEventListener('mouseup', onPointerUp);
+
+  currentDragHandlers = { move: onPointerMove, up: onPointerUp };
+}
+
+/* ---------- Gesture integration hook ----------
+   The hand-swipe gesture recognizer lives in a separate branch /
+   module. When available it can call window.handleGestureSwipe('left' | 'right')
+   and it will drive the exact same flow as the buttons / drag. */
+window.handleGestureSwipe = function (direction) {
+  if (direction !== 'left' && direction !== 'right') return;
+  decideCurrentCard(direction);
+};
+
 /* ---------- Horizontal scroll for pantry row ---------- */
 function scrollRow(id, dir) {
   const el = document.getElementById(id);
@@ -512,6 +812,18 @@ function showPage(evt, pageId, navEl) {
     // elsewhere on the page) — find the matching sidebar item ourselves
     const matchingNav = document.querySelector('.nav-item[data-page="' + pageId + '"]');
     if (matchingNav) matchingNav.classList.add('active');
+  }
+
+  // Shopping List: keep the current session (mid-swipe OR finished
+  // results list) when switching pages. Only build a fresh deck when
+  // there is no active session yet. "Start Over" clears the flag so
+  // a new deck is built the next time this page is shown.
+  if (pageId === 'shopping') {
+    if (shoppingDeckInitialized) {
+      renderSwipeDeck(); // restore cards or results list as-is
+    } else {
+      initShoppingSwipe();
+    }
   }
 }
 
