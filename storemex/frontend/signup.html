@@ -255,28 +255,16 @@
     submitBtn.textContent = "Signing up…";
 
     try {
-      // Wire this up to your real backend signup endpoint, e.g.:
-      // const res = await fetch("/api/signup", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email: emailInput.value.trim(), password: passwordInput.value })
-      // });
-      // if (!res.ok) throw new Error((await res.json()).message || "Signup failed");
-
-      // Placeholder success path — replace with the real call above once
-      // your backend signup endpoint exists.
-      await new Promise(r => setTimeout(r, 600));
-
-      // Marks this browser as signed in, so index.html's guard script
-      // lets it through instead of bouncing back here. See the guard
-      // snippet that goes at the top of index.html's head section
-      // (script tags omitted here on purpose — see chat for the exact
-      // snippet, since writing it out here breaks this script tag):
-      //
-      //     if (!localStorage.getItem("storemex_authed")) {
-      //       window.location.replace("signup.html");
-      //     }
-      localStorage.setItem("storemex_authed", "true");
+      const res = await fetch("/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailInput.value.trim(),
+          password: passwordInput.value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Signup failed");
 
       formStatus.textContent = "Account created — redirecting…";
       formStatus.classList.add("success");

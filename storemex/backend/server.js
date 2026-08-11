@@ -23,7 +23,7 @@ app.post('/signup', async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  res.status(200).json({ message: 'Signup successful', user: data.user });
+  res.status(200).json({ message: 'Signup successful', user: data.user, session: data.session  });
 });
 
 // Login
@@ -86,6 +86,32 @@ app.post('/products', async (req, res) => {
   }
 
   res.status(200).json({ message: 'Product added', product: data[0] });
+});
+// Get products expiring soon for a user
+app.get('/products/:user_id/expiring', async (req, res) => {
+    const { user_id } = req.params;
+
+    const { data, error } = await supabase
+        .from('products')
+        .select('name, brand, quantity, unit, expiry_date, category')
+        .eq('user_id', user_id)
+        .not('expiry_date', 'is', null);
+
+    if (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
+    const now = new Date();
+    const sevenDaysFromNow = new Date();
+      sevenDaysFromNow.setDate(now.getDate() + 7);
+
+    const expiringProducts = (data || []).filter(product => {
+        const expiry = new Date(product.expiry_date);
+        return expiry >= now && expiry <= sevenDaysFromNow;    });
+
+    res.status(200).json({
+        products: expiringProducts
+    });
 });
 
 // Get all products for a user, with freshness/quantity status

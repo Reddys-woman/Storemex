@@ -13,7 +13,7 @@
 
 // Shared illustration markup, keyed by icon type.
 
-const CURRENT_USER_ID = '6b06304b-cf7a-4f97-aa30-7d7a75d032d2'; // TODO: replace with real auth later
+const CURRENT_USER_ID = localStorage.getItem("storemex_user_id") || '6b06304b-cf7a-4f97-aa30-7d7a75d032d2';
 
 const PANTRY_ICONS = {
   leaf: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/></svg>`,
