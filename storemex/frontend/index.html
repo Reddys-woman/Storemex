@@ -60,7 +60,7 @@
   <!-- Topbar -->
   <div class="topbar">
     <div class="greeting">
-      <h2>Good morning, Shruti! ☀️</h2>
+      <h2>Welcome, user! 👋</h2>
       <p>Let's keep your pantry smart &amp; stress-free.</p>
     </div>
     <div class="topbar-right">
@@ -340,6 +340,17 @@
     <div>
       <h2>Alerts</h2>
       <p>Expiry warnings and low-stock notifications.</p>
+    </div>
+    <div class="threshold-controls">
+      <label class="threshold-field">
+        <span>Expiring within (days)</span>
+        <input type="number" id="expiringThresholdInput" min="0" step="1" value="3">
+      </label>
+      <label class="threshold-field">
+        <span>Low stock at or below (qty)</span>
+        <input type="number" id="lowStockThresholdInput" min="0" step="1" value="2">
+      </label>
+      <button type="button" class="modal-btn-secondary" onclick="applyThresholds()">Apply</button>
     </div>
   </div>
   <div id="alertsPageList" class="alerts-panel" style="max-width:640px;">

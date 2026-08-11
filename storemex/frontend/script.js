@@ -57,48 +57,16 @@ const PANTRY_CATEGORIES = [
 // a short timeline.
 const PANTRY_NO_EXPIRY_CATEGORIES = ['grains', 'pulses'];
 
-// Sample stock data — swap this out for real pantry data later.
-// Every item needs: name, category (must match a key above), icon
-// (must match a key in PANTRY_ICONS), size (the descriptive package
-// text shown on the left of the meta line, e.g. "500 g"), unit (the
-// unit token used for merge/low-stock math — kg/g/L/pcs/pack/units),
-// and qty (a NUMBER, decimals allowed — e.g. 1.5 for 1.5 kg tomatoes).
+// Real pantry data — starts empty. Items are added via the "Add
+// Item" modal (or Scan Product, once that's wired up). Every item
+// needs: name, category (must match a key above), icon (must match
+// a key in PANTRY_ICONS), size (the descriptive package text shown
+// on the left of the meta line, e.g. "500 g"), unit (the unit token
+// used for merge/low-stock math — kg/g/L/pcs/pack/units), and qty
+// (a NUMBER, decimals allowed — e.g. 1.5 for 1.5 kg tomatoes).
 // "days" is only used for perishables — grains/pulses categories are
 // exempt from expiry tracking regardless (see PANTRY_NO_EXPIRY_CATEGORIES).
-const PANTRY_ITEMS = [
-  { name: 'Tomatoes',      category: 'vegetables', icon: 'leaf',   size: '500 g',     unit: 'g',    qty: 4,  days: 1  },
-  { name: 'Onions',        category: 'vegetables', icon: 'leaf',   size: '1 kg',      unit: 'kg',   qty: 2,  days: 40 },
-  { name: 'Potatoes',      category: 'vegetables', icon: 'leaf',   size: '2 kg',      unit: 'kg',   qty: 1,  days: 20 },
-  { name: 'Spinach',       category: 'vegetables', icon: 'leaf',   size: '250 g',     unit: 'g',    qty: 1,  days: 2  },
-
-  { name: 'Apples',        category: 'fruits',     icon: 'apple',  size: '6 pcs',     unit: 'pcs',  qty: 6,  days: 10 },
-  { name: 'Bananas',       category: 'fruits',     icon: 'apple',  size: '1 dozen',   unit: 'pcs',  qty: 12, days: 4 },
-
-  { name: 'Basmati Rice',  category: 'grains',     icon: 'rice',   size: '5 kg',      unit: 'kg',   qty: 1  },
-  { name: 'Wheat Flour',   category: 'grains',     icon: 'rice',   size: '5 kg',      unit: 'kg',   qty: 1  },
-  { name: 'Oats',          category: 'grains',     icon: 'rice',   size: '500 g',     unit: 'g',    qty: 1  },
-
-  { name: 'Toor Dal',      category: 'pulses',     icon: 'rice',   size: '1 kg',      unit: 'kg',   qty: 1  },
-  { name: 'Chickpeas',     category: 'pulses',     icon: 'rice',   size: '500 g',     unit: 'g',    qty: 1  },
-  { name: 'Moong Dal',     category: 'pulses',     icon: 'rice',   size: '1 kg',      unit: 'kg',   qty: 1  },
-
-  { name: 'Amul Milk',     category: 'dairy',      icon: 'bottle', size: '1 L',       unit: 'L',    qty: 1,  days: 2  },
-  { name: 'Eggs',          category: 'dairy',      icon: 'egg',    size: '8 pcs',     unit: 'pcs',  qty: 6,  days: 5  },
-  { name: 'Curd',          category: 'dairy',      icon: 'bottle', size: '400 g',     unit: 'g',    qty: 1,  days: 3  },
-
-  { name: 'Chicken',       category: 'nonveg',     icon: 'fish',   size: '500 g',     unit: 'g',    qty: 1,  days: 2  },
-  { name: 'Fish Fillet',   category: 'nonveg',     icon: 'fish',   size: '400 g',     unit: 'g',    qty: 1,  days: 1  },
-
-  { name: 'Bread',         category: 'bakery',     icon: 'bread',  size: '1 loaf',    unit: 'pack', qty: 1,  days: 4  },
-  { name: 'Burger Buns',   category: 'bakery',     icon: 'bread',  size: '4 pcs',     unit: 'pcs',  qty: 4,  days: 3  },
-
-  { name: 'Maggi',         category: 'snacks',     icon: 'snack',  size: '4 packets', unit: 'pack', qty: 3,  days: 15 },
-  { name: 'Potato Chips',  category: 'snacks',     icon: 'snack',  size: '2 packets', unit: 'pack', qty: 2,  days: 25 },
-  { name: 'Namkeen',       category: 'snacks',     icon: 'snack',  size: '1 packet',  unit: 'pack', qty: 0,  days: 20 },
-
-  { name: 'Cold Drink',    category: 'beverages',  icon: 'bottle', size: '2 L',       unit: 'L',    qty: 1,  days: 60 },
-  { name: 'Orange Juice',  category: 'beverages',  icon: 'bottle', size: '1 L',       unit: 'L',    qty: 1,  days: 7  }
-];
+const PANTRY_ITEMS = [];
 
 /* ============================================================
    NAME / UNIT HELPERS
@@ -154,8 +122,13 @@ function formatMeta(item) {
    match whatever is actually in PANTRY_ITEMS.
    ============================================================ */
 
-const EXPIRING_SOON_WITHIN_DAYS = 3;
-const LOW_STOCK_QTY_THRESHOLD = 2; // qty at or below this counts as "low stock"
+// Adjustable, not hardcoded — defaults shown here, but both are
+// changeable at runtime from the Alerts page (see the threshold
+// controls + applyThresholds() further down) and every stat/badge/
+// alert reads these two variables live, so a change takes effect
+// everywhere immediately.
+let EXPIRING_SOON_WITHIN_DAYS = 3;
+let LOW_STOCK_QTY_THRESHOLD = 2; // qty at or below this counts as "low stock"
 
 function isNoExpiryItem(item) {
   return PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category) || item.days == null;
@@ -184,19 +157,12 @@ function getUnavailableItems() {
   return PANTRY_ITEMS.filter(i => i.qty === 0);
 }
 
-// A small recipe catalog. A recipe only counts as a "match" and only
-// shows up on the dashboard when every one of its ingredients is
-// actually present in PANTRY_ITEMS (case-insensitive substring match
-// against item names) — nothing is shown that isn't genuinely in stock.
-const RECIPE_CATALOG = [
-  { title: 'Tomato Rice',        tag: 'Best Match',    tagColor: '#5C7A45', time: '20 min', difficulty: 'Easy', ingredients: ['tomato', 'rice', 'spice'] },
-  { title: 'Masala Maggi',       tag: 'Quick & Easy',   tagColor: '#D9A63D', time: '10 min', difficulty: 'Easy', ingredients: ['maggi', 'onion', 'spice'] },
-  { title: 'Masala Egg Bhurji',  tag: 'High Protein',   tagColor: '#C24A32', time: '15 min', difficulty: 'Easy', ingredients: ['egg', 'onion', 'spice'] },
-  { title: 'Vegetable Khichdi',  tag: 'Comfort Food',   tagColor: '#4E7FA6', time: '30 min', difficulty: 'Easy', ingredients: ['rice', 'lentils', 'spinach'] },
-  { title: 'Chana Masala',       tag: 'High Protein',   tagColor: '#C24A32', time: '35 min', difficulty: 'Medium', ingredients: ['chickpeas', 'onion', 'spice'] },
-  { title: 'Buttered Toast',     tag: 'Quick & Easy',   tagColor: '#D9A63D', time: '5 min',  difficulty: 'Easy', ingredients: ['bread', 'ghee'] },
-  { title: 'Banana Oats',        tag: 'Breakfast',      tagColor: '#8A6FB0', time: '10 min', difficulty: 'Easy', ingredients: ['banana', 'oats', 'honey'] }
-];
+// Recipe catalog — starts empty (no hardcoded recipes). A recipe only
+// counts as a "match" and only shows up on the dashboard when every
+// one of its ingredients is actually present in PANTRY_ITEMS
+// (case-insensitive substring match against item names) — nothing is
+// shown that isn't genuinely in stock.
+const RECIPE_CATALOG = [];
 
 function getMatchedRecipes() {
   const stockNames = PANTRY_ITEMS.map(i => i.name.toLowerCase());
@@ -280,6 +246,26 @@ function renderAlertGroups(limitPerGroup) {
     alertSection('Unavailable', '#9B968A', unavailableCards);
 
   return { html, total: expiring.length + restock.length + unavailable.length };
+}
+
+// Reads the two threshold inputs on the Alerts page, applies them,
+// and re-renders everything that depends on them (stats, badges,
+// alerts, the notification bell) so the change is reflected app-wide
+// immediately — no page reload, no hardcoded number involved.
+function applyThresholds() {
+  const expiringInput = document.getElementById('expiringThresholdInput');
+  const lowStockInput = document.getElementById('lowStockThresholdInput');
+
+  const expiringVal = expiringInput ? parseInt(expiringInput.value, 10) : NaN;
+  const lowStockVal = lowStockInput ? parseInt(lowStockInput.value, 10) : NaN;
+
+  if (!isNaN(expiringVal) && expiringVal >= 0) EXPIRING_SOON_WITHIN_DAYS = expiringVal;
+  if (!isNaN(lowStockVal) && lowStockVal >= 0) LOW_STOCK_QTY_THRESHOLD = lowStockVal;
+
+  renderPantryPage();
+  renderPantryGlance();
+  renderAlerts();
+  renderStats();
 }
 
 function renderAlerts() {
@@ -789,6 +775,12 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAlerts();
   renderStats();
   renderHistoryPage();
+
+  // Reflect the live threshold values in their input fields.
+  const expiringInput = document.getElementById('expiringThresholdInput');
+  const lowStockInput = document.getElementById('lowStockThresholdInput');
+  if (expiringInput) expiringInput.value = EXPIRING_SOON_WITHIN_DAYS;
+  if (lowStockInput) lowStockInput.value = LOW_STOCK_QTY_THRESHOLD;
 
   const dropzone = document.getElementById('uploadDropzone');
   const fileInput = document.getElementById('fileInput');

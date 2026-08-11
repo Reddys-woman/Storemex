@@ -472,6 +472,31 @@
     .pantry-header-actions .search-box{width:100%;}
   }
 
+  .threshold-controls{
+    display:flex;
+    align-items:flex-end;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .threshold-field{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+  }
+  .threshold-field input{
+    width:90px;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--card);
+    font-size:13px;
+    font-family:inherit;
+    color:var(--ink);
+  }
+
   /* ---------- PAGE EMPTY STATE ---------- */
   .page-empty{
     background:var(--card);
