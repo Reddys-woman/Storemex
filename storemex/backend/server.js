@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
 const supabase = require('./supabaseClient');
-const { smartScan } = require('./ai');
+const { smartScan } = require('./ai/smartScan');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
