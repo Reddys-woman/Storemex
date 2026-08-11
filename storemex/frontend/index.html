@@ -113,7 +113,7 @@
       <div class="panel">
         <div class="panel-head">
           <h3>Pantry at a Glance <span class="spark">✦</span></h3>
-          <a class="view-all">View All Items <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg></a>
+          <a class="view-all" href="#" onclick="goToPage('pantry', event)">View All Items <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg></a>
         </div>
         <div class="scroll-row-wrap">
           <button class="scroll-arrow left" onclick="scrollRow('pantryScroll',-1)">
@@ -149,15 +149,13 @@
               <div class="pantry-meta">8 pcs &nbsp;·&nbsp; Qty: 6</div>
             </div>
 
-            <!-- Tomatoes -->
+            <!-- Tomatoes (vegetable → leaf illustration) -->
             <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--red-soft);">
+              <div class="pantry-illustration" style="background:var(--green-soft);">
                 <span class="days-badge" style="color:#C24A32;">1 day left</span>
-                <svg width="72" height="54" viewBox="0 0 72 54" fill="none">
-                  <circle cx="20" cy="30" r="16" fill="#E8694E" stroke="#C24A32" stroke-width="1.6"/>
-                  <circle cx="46" cy="24" r="19" fill="#E8694E" stroke="#C24A32" stroke-width="1.6"/>
-                  <path d="M46 5c-2 2-2 5 0 7M42 6c1 2 0 4-1 5M50 6c-1 2 0 4 1 5" stroke="#5C7A45" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M20 14c-1.5 1.5-1.5 4 0 5.5" stroke="#5C7A45" stroke-width="1.8" stroke-linecap="round"/>
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                  <path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/>
+                  <path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
               </div>
               <div class="pantry-name">Tomatoes</div>
@@ -181,28 +179,27 @@
               <div class="pantry-meta">5 kg &nbsp;·&nbsp; Qty: 1</div>
             </div>
 
-            <!-- Maggi / noodles -->
+            <!-- Maggi / noodles (snack item → snack packet illustration) -->
             <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--yellow-soft);">
-                <span class="days-badge" style="color:#D9A63D;">15 days left</span>
+              <div class="pantry-illustration" style="background:var(--amber-soft);">
+                <span class="days-badge" style="color:#C98A2E;">15 days left</span>
                 <svg width="52" height="60" viewBox="0 0 52 60" fill="none">
-                  <rect x="6" y="6" width="40" height="48" rx="6" fill="#F6C453" stroke="#D9A63D" stroke-width="1.6"/>
-                  <path d="M14 24c4 6 8-6 12 0s8-6 12 0" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                  <path d="M14 34c4 6 8-6 12 0s8-6 12 0" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                  <path d="M10 10h32l2 6v34a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V16l2-6z" fill="#F6DDA0" stroke="#C98A2E" stroke-width="1.8"/>
+                  <path d="M10 10c2-5 6-8 16-8s14 3 16 8" fill="none" stroke="#C98A2E" stroke-width="1.8"/>
+                  <path d="M16 28h20M16 36h20M16 44h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
                 </svg>
               </div>
               <div class="pantry-name">Maggi</div>
               <div class="pantry-meta">4 packets &nbsp;·&nbsp; Qty: 3</div>
             </div>
 
-            <!-- Onion -->
+            <!-- Onion (vegetable → leaf illustration) -->
             <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--purple-soft);">
+              <div class="pantry-illustration" style="background:var(--green-soft);">
                 <span class="days-badge" style="color:#5C7A45;">40 days left</span>
-                <svg width="54" height="58" viewBox="0 0 54 58" fill="none">
-                  <path d="M27 8c3 6 3 8 0 12-3-4-3-6 0-12z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.4"/>
-                  <ellipse cx="27" cy="36" rx="18" ry="18" fill="#D9C2E0" stroke="#8A6FB0" stroke-width="1.6"/>
-                  <path d="M18 22c4 8 4 22 0 28M36 22c-4 8-4 22 0 28M27 20v34" stroke="#8A6FB0" stroke-width="1.2" opacity="0.6"/>
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                  <path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/>
+                  <path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
               </div>
               <div class="pantry-name">Onions</div>
@@ -220,24 +217,14 @@
       <div class="panel">
         <div class="panel-head">
           <h3>AI Recipe Recommendations <span class="spark">✦</span></h3>
-          <a class="view-all">See All Recipes <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg></a>
+          <a class="view-all" href="#" onclick="goToPage('recipes', event)">See All Recipes <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg></a>
         </div>
         <div class="recipe-row">
 
           <!-- Tomato Rice -->
           <div class="recipe-card">
-            <div class="recipe-illustration" style="background:linear-gradient(160deg,#F3E7CE,#EBD8A9);">
-              <span class="recipe-tag" style="background:#5C7A45;">Best Match</span>
-              <svg width="110" height="80" viewBox="0 0 110 80" fill="none">
-                <ellipse cx="55" cy="60" rx="46" ry="12" fill="#EDE0C4"/>
-                <path d="M12 42a43 20 0 0 0 86 0z" fill="#F3D9A6" stroke="#D98A3D" stroke-width="1.6"/>
-                <ellipse cx="55" cy="42" rx="43" ry="17" fill="#F6E4B8" stroke="#D98A3D" stroke-width="1.6"/>
-                <circle cx="40" cy="38" r="6" fill="#C24A32"/>
-                <circle cx="63" cy="35" r="5" fill="#C24A32"/>
-                <circle cx="52" cy="46" r="4.5" fill="#5C7A45"/>
-              </svg>
-            </div>
             <div class="recipe-body">
+              <span class="recipe-tag-pill" style="background:#5C7A45;">Best Match</span>
               <div class="recipe-title-row">
                 <span class="recipe-title">Tomato Rice</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>
@@ -252,17 +239,8 @@
 
           <!-- Masala Maggi -->
           <div class="recipe-card">
-            <div class="recipe-illustration" style="background:linear-gradient(160deg,#FBF1D8,#F6E0A0);">
-              <span class="recipe-tag" style="background:#D9A63D;">Quick &amp; Easy</span>
-              <svg width="110" height="80" viewBox="0 0 110 80" fill="none">
-                <ellipse cx="55" cy="60" rx="46" ry="12" fill="#F1E2B8"/>
-                <path d="M12 42a43 20 0 0 0 86 0z" fill="#F6E4B8" stroke="#D9A63D" stroke-width="1.6"/>
-                <ellipse cx="55" cy="42" rx="43" ry="17" fill="#FBF1D8" stroke="#D9A63D" stroke-width="1.6"/>
-                <path d="M28 38c6 8 10-10 16 0s10-10 16 0 10-10 14-2" stroke="#E8A23D" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-                <path d="M28 46c6 8 10-10 16 0s10-10 16 0 10-10 14-2" stroke="#E8A23D" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-              </svg>
-            </div>
             <div class="recipe-body">
+              <span class="recipe-tag-pill" style="background:#D9A63D;">Quick &amp; Easy</span>
               <div class="recipe-title-row">
                 <span class="recipe-title">Masala Maggi</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>
@@ -277,17 +255,8 @@
 
           <!-- Masala Egg Bhurji -->
           <div class="recipe-card">
-            <div class="recipe-illustration" style="background:linear-gradient(160deg,#FBEBD8,#F3CB9C);">
-              <span class="recipe-tag" style="background:#C24A32;">High Protein</span>
-              <svg width="110" height="80" viewBox="0 0 110 80" fill="none">
-                <ellipse cx="55" cy="60" rx="46" ry="12" fill="#F3DDC0"/>
-                <path d="M12 42a43 20 0 0 0 86 0z" fill="#F3D9A6" stroke="#D98A3D" stroke-width="1.6"/>
-                <ellipse cx="55" cy="42" rx="43" ry="17" fill="#FBEBD8" stroke="#D98A3D" stroke-width="1.6"/>
-                <path d="M32 38c3-3 8-3 10 0 2-4 8-4 10 0 2-3 8-3 10 0 2-4 8-3 9 1" stroke="#F0B23D" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.9"/>
-                <circle cx="60" cy="34" r="3" fill="#E8694E"/>
-              </svg>
-            </div>
             <div class="recipe-body">
+              <span class="recipe-tag-pill" style="background:#C24A32;">High Protein</span>
               <div class="recipe-title-row">
                 <span class="recipe-title">Masala Egg Bhurji</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>
@@ -335,7 +304,7 @@
       <div class="alerts-panel">
         <div class="panel-head">
           <h3>Smart Alerts</h3>
-          <a class="view-all">View All</a>
+          <a class="view-all" href="#" onclick="goToPage('alerts', event)">View All</a>
         </div>
 
         <div class="alert-item">
@@ -389,22 +358,22 @@
           <h3>Quick Actions</h3>
         </div>
         <div class="quick-grid">
-          <div class="quick-item">
+          <div class="quick-item" onclick="goToPage('scan', event)">
             <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg></div>
             <div class="qtitle">Scan Product</div>
             <div class="qsub">Use camera to scan</div>
           </div>
-          <div class="quick-item">
+          <div class="quick-item" onclick="goToPage('pantry', event)">
             <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></div>
             <div class="qtitle">Add Manually</div>
             <div class="qsub">Add item manually</div>
           </div>
-          <div class="quick-item">
+          <div class="quick-item" onclick="goToPage('shopping', event)">
             <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg></div>
             <div class="qtitle">View Shopping List</div>
             <div class="qsub">See items to buy</div>
           </div>
-          <div class="quick-item">
+          <div class="quick-item" onclick="goToPage('analytics', event)">
             <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><path d="M4 20V10M11 20V4M18 20v-7"/></svg></div>
             <div class="qtitle">Consumption Log</div>
             <div class="qsub">Track what you used</div>

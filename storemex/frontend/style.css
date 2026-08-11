@@ -23,6 +23,10 @@
     --purple-soft:#EBE3F5;
     --blue:#4E7FA6;
     --blue-soft:#E1EDF5;
+    --teal:#4E9A8A;
+    --teal-soft:#DCEFEA;
+    --amber:#C98A2E;
+    --amber-soft:#F7E7C9;
     --radius-lg:20px;
     --radius-md:14px;
     --radius-sm:10px;
@@ -240,6 +244,7 @@
     display:flex;align-items:center;gap:3px;
     background:var(--green-soft);
     padding:6px 10px;border-radius:20px;
+    cursor:pointer;
   }
   .view-all svg{width:11px;height:11px;}
 
@@ -299,18 +304,14 @@
     background:var(--card);
     display:flex;flex-direction:column;
   }
-  .recipe-illustration{
-    height:118px;
-    display:flex;align-items:center;justify-content:center;
-    position:relative;
-  }
-  .recipe-tag{
-    position:absolute;top:10px;left:10px;
+  .recipe-tag-pill{
+    align-self:flex-start;
     font-size:9.5px;font-weight:700;
     padding:4px 9px;border-radius:20px;
     color:#fff;
+    margin-bottom:2px;
   }
-  .recipe-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;}
+  .recipe-body{padding:16px;display:flex;flex-direction:column;gap:6px;}
   .recipe-title-row{display:flex;align-items:center;justify-content:space-between;}
   .recipe-title{font-size:13.5px;font-weight:700;}
   .recipe-title-row svg{width:13px;height:13px;color:var(--ink-faint);}
@@ -362,6 +363,7 @@
     display:flex;flex-direction:column;gap:8px;
     background:var(--card-soft);
     transition:background .15s ease, transform .15s ease;
+    cursor:pointer;
   }
   .quick-item:hover{background:var(--green-soft);transform:translateY(-1px);}
   .quick-item .qicon{
