@@ -53,8 +53,16 @@ async function lookupBarcode(barcode) {
  */
 async function detectBarcodeAndLookup(imageInput) {
     try {
+        let inputForReader = imageInput;
+        if (typeof imageInput === "string" && imageInput.startsWith("data:image/")) {
+            const parts = imageInput.split(";base64,");
+            if (parts.length === 2) {
+                inputForReader = Buffer.from(parts[1], "base64");
+            }
+        }
+
         const barcode = await javascriptBarcodeReader({
-            image: imageInput,
+            image: inputForReader,
             barcode: "code-128",
             options: {
                 useWorker: false

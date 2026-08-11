@@ -25,10 +25,10 @@ async function scanImage(imageInput) {
 
     if (typeof imageInput === "string") {
         if (imageInput.startsWith("data:image/")) {
-            const matches = imageInput.match(/^data:(image\/\w+);base64,(.+)$/);
-            if (matches) {
-                mimeType = matches[1];
-                imageData = matches[2];
+            const parts = imageInput.split(";base64,");
+            if (parts.length === 2) {
+                mimeType = parts[0].replace("data:", "").trim();
+                imageData = parts[1].trim();
             } else {
                 imageData = imageInput;
             }

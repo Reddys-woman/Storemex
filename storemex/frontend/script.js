@@ -46,50 +46,57 @@ function goToPage(pageId, evt) {
 }
 
 /* ---------- Upload dropzone (UI only for now) ---------- */
+/* ---------- Upload dropzone handling ---------- */
 document.addEventListener('DOMContentLoaded', () => {
-  const dropzone = document.getElementById('uploadDropzone');
-  const fileInput = document.getElementById('fileInput');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileList = document.getElementById('uploadFileList');
 
-  if (!dropzone || !fileInput) return;
+  function setupDropzone(dropzoneId, fileInputId, uploadBtnId, fileListId) {
+    const dropzone = document.getElementById(dropzoneId);
+    const fileInput = document.getElementById(fileInputId);
+    const uploadBtn = document.getElementById(uploadBtnId);
+    const fileList = document.getElementById(fileListId);
 
-  // Click anywhere on the dropzone (or the button) opens the file picker
-  dropzone.addEventListener('click', () => fileInput.click());
-  uploadBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileInput.click();
-  });
+    if (!dropzone || !fileInput || !fileList) return;
 
-  // Drag & drop visual state
-  ['dragenter', 'dragover'].forEach(evtName => {
-    dropzone.addEventListener(evtName, (e) => {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-  });
-  ['dragleave', 'drop'].forEach(evtName => {
-    dropzone.addEventListener(evtName, (e) => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-    });
-  });
-  dropzone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files && files.length) handleFiles(files);
-  });
-
-  // File picker selection
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files && fileInput.files.length) {
-      handleFiles(fileInput.files);
-      fileInput.value = ''; // allow re-selecting the same file later
+    dropzone.addEventListener('click', () => fileInput.click());
+    if (uploadBtn) {
+      uploadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
     }
-  });
 
-  function handleFiles(fileArray) {
+    ['dragenter', 'dragover'].forEach(evtName => {
+      dropzone.addEventListener(evtName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evtName => {
+      dropzone.addEventListener(evtName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length) handleFiles(files, fileList);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length) {
+        handleFiles(fileInput.files, fileList);
+        fileInput.value = '';
+      }
+    });
+  }
+
+  // Bind Dashboard dropzone and Scan Product page dropzone
+  setupDropzone('uploadDropzone', 'fileInput', 'uploadBtn', 'uploadFileList');
+  setupDropzone('scanDropzone', 'scanFileInput', 'scanUploadBtn', 'scanFileList');
+
+  function handleFiles(fileArray, fileList) {
     Array.from(fileArray).forEach(file => {
-      const fileRow = addFileRow(file);
+      const fileRow = addFileRow(file, fileList);
       scanFile(file, fileRow);
     });
   }
@@ -107,7 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.onload = async (e) => {
       const base64Image = e.target.result;
       try {
-        const response = await fetch('/api/scan', {
+        // Try relative endpoint first, then http://localhost:3000/api/scan as fallback
+        let apiUrl = '/api/scan';
+        if (window.location.protocol === 'file:') {
+          apiUrl = 'http://localhost:3000/api/scan';
+        }
+
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: base64Image })
@@ -119,18 +132,18 @@ document.addEventListener('DOMContentLoaded', () => {
           statusSpan.textContent = ` ✅ Scanned: ${item.brand} ${item.name} (${item.quantity || ''} ${item.unit || ''})`;
         } else {
           statusSpan.style.color = '#ef4444';
-          statusSpan.textContent = ' ❌ Scan failed';
+          statusSpan.textContent = ' ❌ Scan failed: ' + (data.error || 'Server error');
         }
       } catch (err) {
         console.error('Scan API error:', err);
         statusSpan.style.color = '#ef4444';
-        statusSpan.textContent = ' ❌ Scan error';
+        statusSpan.textContent = ' ❌ Scan error: Ensure backend server is running';
       }
     };
     reader.readAsDataURL(file);
   }
 
-  function addFileRow(file) {
+  function addFileRow(file, fileList) {
     const row = document.createElement('div');
     row.className = 'upload-file-item';
     row.innerHTML = `
