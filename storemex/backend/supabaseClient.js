@@ -1,33 +1,22 @@
-require('dns').setDefaultResultOrder('ipv4first');
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
-const { createClient } = require('@supabase/supabase-js');
-const axios = require('axios');
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 
-const customFetch = async (url, options = {}) => {
-  const response = await axios({
-    url,
-    method: options.method || 'GET',
-    headers: options.headers,
-    data: options.body,
-    validateStatus: () => true,
-  });
+const { createClient } = require("@supabase/supabase-js");
 
-  return {
-    ok: response.status >= 200 && response.status < 300,
-    status: response.status,
-    headers: {
-      get: (name) => response.headers[name.toLowerCase()] || null,
-    },
-    json: async () => response.data,
-    text: async () => JSON.stringify(response.data),
-  };
-};
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey =
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_ANON_KEY;
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  { global: { fetch: customFetch } }
-);
+if (!supabaseUrl) {
+    throw new Error("SUPABASE_URL is missing from backend/.env");
+}
+
+if (!supabaseKey) {
+    throw new Error(
+        "SUPABASE_SERVICE_KEY or SUPABASE_ANON_KEY is missing from backend/.env"
+    );
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = supabase;
