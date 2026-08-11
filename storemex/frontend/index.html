@@ -71,7 +71,7 @@
       </div>
       <button class="icon-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9a2 2 0 0 1 3.4 0l8 13.6A2 2 0 0 1 20 20.5H4a2 2 0 0 1-1.7-3l8-13.6z"/><path d="M12 9.5v4M12 16.5h.01"/></svg>
-        <span class="badge">3</span>
+        <span class="badge" id="notifBadge">0</span>
       </button>
       <div class="topbar-avatar">S</div>
     </div>
@@ -83,25 +83,25 @@
       <div class="stat-icon" style="background:var(--green-soft);">
         <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><path d="M6 3v6a6 6 0 0 0 12 0V3"/><path d="M9 3v6M15 3v6M12 15v6"/></svg>
       </div>
-      <div><div class="stat-value">42</div><div class="stat-label">Total Items</div><div class="stat-sub">In your pantry</div></div>
+      <div><div class="stat-value" id="statTotalItems">0</div><div class="stat-label">Total Items</div><div class="stat-sub">In your pantry</div></div>
     </div>
     <div class="stat-card">
       <div class="stat-icon" style="background:var(--orange-soft);">
         <svg viewBox="0 0 24 24" fill="none" stroke="#D98A3D" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
       </div>
-      <div><div class="stat-value">6</div><div class="stat-label">Expiring Soon</div><div class="stat-sub">Within 3 days</div></div>
+      <div><div class="stat-value" id="statExpiringSoon">0</div><div class="stat-label">Expiring Soon</div><div class="stat-sub">Within 3 days</div></div>
     </div>
     <div class="stat-card">
       <div class="stat-icon" style="background:var(--yellow-soft);">
         <svg viewBox="0 0 24 24" fill="none" stroke="#D9A63D" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
       </div>
-      <div><div class="stat-value">8</div><div class="stat-label">Low Stock</div><div class="stat-sub">Need restock</div></div>
+      <div><div class="stat-value" id="statLowStock">0</div><div class="stat-label">Low Stock</div><div class="stat-sub">Need restock</div></div>
     </div>
     <div class="stat-card">
       <div class="stat-icon" style="background:var(--purple-soft);">
         <svg viewBox="0 0 24 24" fill="none" stroke="#8A6FB0" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5c0 2 1 3 2 4H15c1-1 2-2 2-4a5 5 0 0 0-5-5z"/><path d="M9 15h6M10 18h4"/></svg>
       </div>
-      <div><div class="stat-value">12</div><div class="stat-label">Recipe Ideas</div><div class="stat-sub">For you today</div></div>
+      <div><div class="stat-value" id="statRecipeIdeas">0</div><div class="stat-label">Recipe Ideas</div><div class="stat-sub">For you today</div></div>
     </div>
   </div>
 
@@ -120,92 +120,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="#6F6C5C" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           <div class="scroll-row" id="pantryScroll">
-
-            <!-- Milk -->
-            <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--blue-soft);">
-                <span class="days-badge" style="color:#C24A32;">2 days left</span>
-                <svg width="46" height="60" viewBox="0 0 46 60" fill="none">
-                  <path d="M17 2h12l2 10-3 4v34a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V16l-3-4 2-10z" fill="#EAF3FA" stroke="#4E7FA6" stroke-width="1.8"/>
-                  <rect x="16" y="26" width="14" height="12" fill="#4E7FA6" opacity="0.85"/>
-                  <rect x="17" y="6" width="12" height="5" rx="1" fill="#4E7FA6"/>
-                </svg>
-              </div>
-              <div class="pantry-name">Amul Milk</div>
-              <div class="pantry-meta">1 L &nbsp;·&nbsp; Qty: 1</div>
-            </div>
-
-            <!-- Eggs -->
-            <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--yellow-soft);">
-                <span class="days-badge" style="color:#D9A63D;">5 days left</span>
-                <svg width="70" height="52" viewBox="0 0 70 52" fill="none">
-                  <ellipse cx="16" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/>
-                  <ellipse cx="35" cy="22" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/>
-                  <ellipse cx="54" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/>
-                </svg>
-              </div>
-              <div class="pantry-name">Eggs</div>
-              <div class="pantry-meta">8 pcs &nbsp;·&nbsp; Qty: 6</div>
-            </div>
-
-            <!-- Tomatoes (vegetable → leaf illustration) -->
-            <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--green-soft);">
-                <span class="days-badge" style="color:#C24A32;">1 day left</span>
-                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                  <path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/>
-                  <path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="pantry-name">Tomatoes</div>
-              <div class="pantry-meta">500 g &nbsp;·&nbsp; Qty: 4</div>
-            </div>
-
-            <!-- Rice -->
-            <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--orange-soft);">
-                <span class="days-badge" style="color:#5C7A45;">In Stock</span>
-                <svg width="70" height="52" viewBox="0 0 70 52" fill="none">
-                  <path d="M10 26a25 12 0 0 0 50 0z" fill="#F3E7CE" stroke="#D98A3D" stroke-width="1.6"/>
-                  <ellipse cx="35" cy="26" rx="25" ry="10" fill="#FBF3DD" stroke="#D98A3D" stroke-width="1.6"/>
-                  <ellipse cx="27" cy="24" rx="2.6" ry="1.4" fill="#D98A3D"/>
-                  <ellipse cx="35" cy="21" rx="2.6" ry="1.4" fill="#D98A3D"/>
-                  <ellipse cx="43" cy="25" rx="2.6" ry="1.4" fill="#D98A3D"/>
-                  <ellipse cx="38" cy="28" rx="2.6" ry="1.4" fill="#D98A3D"/>
-                </svg>
-              </div>
-              <div class="pantry-name">Basmati Rice</div>
-              <div class="pantry-meta">5 kg &nbsp;·&nbsp; Qty: 1</div>
-            </div>
-
-            <!-- Maggi / noodles (snack item → snack packet illustration) -->
-            <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--amber-soft);">
-                <span class="days-badge" style="color:#C98A2E;">15 days left</span>
-                <svg width="52" height="60" viewBox="0 0 52 60" fill="none">
-                  <path d="M10 10h32l2 6v34a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V16l2-6z" fill="#F6DDA0" stroke="#C98A2E" stroke-width="1.8"/>
-                  <path d="M10 10c2-5 6-8 16-8s14 3 16 8" fill="none" stroke="#C98A2E" stroke-width="1.8"/>
-                  <path d="M16 28h20M16 36h20M16 44h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="pantry-name">Maggi</div>
-              <div class="pantry-meta">4 packets &nbsp;·&nbsp; Qty: 3</div>
-            </div>
-
-            <!-- Onion (vegetable → leaf illustration) -->
-            <div class="pantry-card">
-              <div class="pantry-illustration" style="background:var(--green-soft);">
-                <span class="days-badge" style="color:#5C7A45;">40 days left</span>
-                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                  <path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/>
-                  <path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="pantry-name">Onions</div>
-              <div class="pantry-meta">1 kg &nbsp;·&nbsp; Qty: 2</div>
-            </div>
-
+            <!-- Populated by renderPantryGlance() in script.js from PANTRY_ITEMS -->
           </div>
           <button class="scroll-arrow right" onclick="scrollRow('pantryScroll',1)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#6F6C5C" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
@@ -219,58 +134,11 @@
           <h3>AI Recipe Recommendations <span class="spark">✦</span></h3>
           <a class="view-all" href="#" onclick="goToPage('recipes', event)">See All Recipes <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg></a>
         </div>
-        <div class="recipe-row">
-
-          <!-- Tomato Rice -->
-          <div class="recipe-card">
-            <div class="recipe-body">
-              <span class="recipe-tag-pill" style="background:#5C7A45;">Best Match</span>
-              <div class="recipe-title-row">
-                <span class="recipe-title">Tomato Rice</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>
-              </div>
-              <div class="recipe-meta">
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>20 min</span>
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>Easy</span>
-              </div>
-              <div class="recipe-uses">Uses tomatoes, rice, spices</div>
-            </div>
-          </div>
-
-          <!-- Masala Maggi -->
-          <div class="recipe-card">
-            <div class="recipe-body">
-              <span class="recipe-tag-pill" style="background:#D9A63D;">Quick &amp; Easy</span>
-              <div class="recipe-title-row">
-                <span class="recipe-title">Masala Maggi</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>
-              </div>
-              <div class="recipe-meta">
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>10 min</span>
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>Easy</span>
-              </div>
-              <div class="recipe-uses">Uses maggi, onions, spices</div>
-            </div>
-          </div>
-
-          <!-- Masala Egg Bhurji -->
-          <div class="recipe-card">
-            <div class="recipe-body">
-              <span class="recipe-tag-pill" style="background:#C24A32;">High Protein</span>
-              <div class="recipe-title-row">
-                <span class="recipe-title">Masala Egg Bhurji</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>
-              </div>
-              <div class="recipe-meta">
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>15 min</span>
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>Easy</span>
-              </div>
-              <div class="recipe-uses">Uses eggs, onions, spices</div>
-            </div>
-          </div>
-
+        <div class="recipe-row" id="recipeRow">
+          <!-- Populated by renderRecipes() in script.js — only recipes whose
+               ingredients are actually in PANTRY_ITEMS are shown. -->
         </div>
-        <div class="dots"><span class="active"></span><span></span><span></span><span></span></div>
+        <div class="dots" id="recipeDots"></div>
       </div>
 
       <!-- Upload Grocery Bill / Receipt -->
@@ -307,48 +175,8 @@
           <a class="view-all" href="#" onclick="goToPage('alerts', event)">View All</a>
         </div>
 
-        <div class="alert-item">
-          <div class="alert-dot" style="background:rgba(194,74,50,0.18);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#E8694E" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>
-          </div>
-          <div class="alert-text">
-            <div class="alert-title">Milk expires tomorrow</div>
-            <div class="alert-sub">Amul Milk · 1L</div>
-          </div>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
-        </div>
-
-        <div class="alert-item">
-          <div class="alert-dot" style="background:rgba(217,138,61,0.2);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#E8A23D" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>
-          </div>
-          <div class="alert-text">
-            <div class="alert-title">Tomatoes expire in 1 day</div>
-            <div class="alert-sub">Tomatoes · 500 g</div>
-          </div>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
-        </div>
-
-        <div class="alert-item">
-          <div class="alert-dot" style="background:rgba(217,166,61,0.2);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#E8C23D" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
-          </div>
-          <div class="alert-text">
-            <div class="alert-title">Eggs are running low</div>
-            <div class="alert-sub">Only 2 left</div>
-          </div>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
-        </div>
-
-        <div class="alert-item">
-          <div class="alert-dot" style="background:rgba(217,166,61,0.2);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#E8C23D" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
-          </div>
-          <div class="alert-text">
-            <div class="alert-title">Rice is running low</div>
-            <div class="alert-sub">Only 1 kg left</div>
-          </div>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
+        <div id="alertsList">
+          <!-- Populated by renderAlerts() in script.js from PANTRY_ITEMS -->
         </div>
       </div>
 
@@ -484,12 +312,15 @@
       <p>Expiry warnings and low-stock notifications.</p>
     </div>
   </div>
-  <div class="page-empty">
+  <div id="alertsPageList" class="alerts-panel" style="max-width:640px;">
+    <!-- Populated by renderAlerts() in script.js from PANTRY_ITEMS -->
+  </div>
+  <div class="page-empty" id="alertsPageEmpty" style="display:none;">
     <div class="page-empty-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><path d="M10.3 3.9a2 2 0 0 1 3.4 0l8 13.6A2 2 0 0 1 20 20.5H4a2 2 0 0 1-1.7-3l8-13.6z"/><path d="M12 9.5v4M12 16.5h.01"/></svg>
     </div>
-    <h3>Alerts coming soon</h3>
-    <p>This page will list every expiry &amp; low-stock alert in one feed.</p>
+    <h3>You're all caught up</h3>
+    <p>No expiry warnings or low-stock alerts right now.</p>
   </div>
 </div>
 

@@ -128,6 +128,191 @@ const PANTRY_ITEMS = [
   { name: 'Dry Peas',       category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' }
 ];
 
+/* ============================================================
+   DERIVED DATA HELPERS
+   Everything below reads PANTRY_ITEMS directly — nothing here is
+   a separate hardcoded number, so stats/alerts/badges always
+   match whatever is actually in PANTRY_ITEMS.
+   ============================================================ */
+
+const EXPIRING_SOON_WITHIN_DAYS = 3;
+const LOW_STOCK_QTY_THRESHOLD = 2; // qty at or below this counts as "low stock"
+
+// Pulls the numeric quantity out of a meta string like "500 g · Qty: 4"
+function parseQty(meta) {
+  const match = /Qty:\s*(\d+)/i.exec(meta || '');
+  return match ? parseInt(match[1], 10) : null;
+}
+
+function isNoExpiryItem(item) {
+  return PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category) || item.days == null;
+}
+
+function getExpiringSoonItems() {
+  return PANTRY_ITEMS
+    .filter(i => !isNoExpiryItem(i) && i.days <= EXPIRING_SOON_WITHIN_DAYS)
+    .sort((a, b) => a.days - b.days);
+}
+
+function getLowStockItems() {
+  return PANTRY_ITEMS
+    .map(i => ({ item: i, qty: parseQty(i.meta) }))
+    .filter(x => x.qty != null && x.qty <= LOW_STOCK_QTY_THRESHOLD)
+    .sort((a, b) => a.qty - b.qty)
+    .map(x => x.item);
+}
+
+// A small recipe catalog. A recipe only counts as a "match" and only
+// shows up on the dashboard when every one of its ingredients is
+// actually present in PANTRY_ITEMS (case-insensitive substring match
+// against item names) — nothing is shown that isn't genuinely in stock.
+const RECIPE_CATALOG = [
+  { title: 'Tomato Rice',        tag: 'Best Match',    tagColor: '#5C7A45', time: '20 min', difficulty: 'Easy', ingredients: ['tomato', 'rice', 'spice'] },
+  { title: 'Masala Maggi',       tag: 'Quick & Easy',   tagColor: '#D9A63D', time: '10 min', difficulty: 'Easy', ingredients: ['maggi', 'onion', 'spice'] },
+  { title: 'Masala Egg Bhurji',  tag: 'High Protein',   tagColor: '#C24A32', time: '15 min', difficulty: 'Easy', ingredients: ['egg', 'onion', 'spice'] },
+  { title: 'Vegetable Khichdi',  tag: 'Comfort Food',   tagColor: '#4E7FA6', time: '30 min', difficulty: 'Easy', ingredients: ['rice', 'lentils', 'spinach'] },
+  { title: 'Chana Masala',       tag: 'High Protein',   tagColor: '#C24A32', time: '35 min', difficulty: 'Medium', ingredients: ['chickpeas', 'onion', 'spice'] },
+  { title: 'Buttered Toast',     tag: 'Quick & Easy',   tagColor: '#D9A63D', time: '5 min',  difficulty: 'Easy', ingredients: ['bread', 'ghee'] },
+  { title: 'Banana Oats',        tag: 'Breakfast',      tagColor: '#8A6FB0', time: '10 min', difficulty: 'Easy', ingredients: ['banana', 'oats', 'honey'] }
+];
+
+function getMatchedRecipes() {
+  const stockNames = PANTRY_ITEMS.map(i => i.name.toLowerCase());
+  return RECIPE_CATALOG.filter(recipe =>
+    recipe.ingredients.every(ing => stockNames.some(name => name.includes(ing)))
+  );
+}
+
+const RECIPE_TIMER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>`;
+const RECIPE_DIFFICULTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>`;
+const RECIPE_HEART_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>`;
+
+function renderRecipeCard(recipe) {
+  return `
+    <div class="recipe-card">
+      <div class="recipe-body">
+        <span class="recipe-tag-pill" style="background:${recipe.tagColor};">${recipe.tag}</span>
+        <div class="recipe-title-row">
+          <span class="recipe-title">${recipe.title}</span>
+          ${RECIPE_HEART_ICON}
+        </div>
+        <div class="recipe-meta">
+          <span>${RECIPE_TIMER_ICON}${recipe.time}</span>
+          <span>${RECIPE_DIFFICULTY_ICON}${recipe.difficulty}</span>
+        </div>
+        <div class="recipe-uses">Uses ${recipe.ingredients.join(', ')}</div>
+      </div>
+    </div>`;
+}
+
+function renderRecipes() {
+  const row = document.getElementById('recipeRow');
+  const dots = document.getElementById('recipeDots');
+  if (!row) return;
+  const matched = getMatchedRecipes();
+  row.innerHTML = matched.map(renderRecipeCard).join('');
+  if (dots) {
+    dots.innerHTML = matched.map((_, i) => `<span class="${i === 0 ? 'active' : ''}"></span>`).join('');
+  }
+}
+
+const ALERT_EXPIRY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="#E8694E" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>`;
+const ALERT_LOWSTOCK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="#E8C23D" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>`;
+const ALERT_CHEVRON = `<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>`;
+
+function renderAlertItem(alert) {
+  return `
+    <div class="alert-item">
+      <div class="alert-dot" style="background:${alert.dotBg};">${alert.icon}</div>
+      <div class="alert-text">
+        <div class="alert-title">${alert.title}</div>
+        <div class="alert-sub">${alert.sub}</div>
+      </div>
+      ${ALERT_CHEVRON}
+    </div>`;
+}
+
+// Builds the live list of alerts straight from PANTRY_ITEMS: an expiry
+// alert for anything expiring within EXPIRING_SOON_WITHIN_DAYS days, and
+// a low-stock alert for anything at/under LOW_STOCK_QTY_THRESHOLD.
+function buildAlerts() {
+  const alerts = [];
+
+  getExpiringSoonItems().forEach(item => {
+    const label = item.days <= 0 ? 'expires today' : item.days === 1 ? 'expires tomorrow' : `expires in ${item.days} days`;
+    alerts.push({
+      type: 'expiry',
+      days: item.days,
+      title: `${item.name} ${label}`,
+      sub: `${item.name} · ${item.meta.split('·')[0].trim()}`,
+      icon: ALERT_EXPIRY_ICON,
+      dotBg: 'rgba(194,74,50,0.18)'
+    });
+  });
+
+  getLowStockItems().forEach(item => {
+    const qty = parseQty(item.meta);
+    alerts.push({
+      type: 'lowstock',
+      title: `${item.name} is running low`,
+      sub: `Only ${qty} left`,
+      icon: ALERT_LOWSTOCK_ICON,
+      dotBg: 'rgba(217,166,61,0.2)'
+    });
+  });
+
+  return alerts;
+}
+
+function renderAlerts() {
+  const alerts = buildAlerts();
+
+  // Homepage panel — capped to a short preview list
+  const homeList = document.getElementById('alertsList');
+  if (homeList) {
+    homeList.innerHTML = alerts.slice(0, 4).map(renderAlertItem).join('');
+  }
+
+  // Full Alerts page — everything, or an empty state
+  const pageList = document.getElementById('alertsPageList');
+  const pageEmpty = document.getElementById('alertsPageEmpty');
+  if (pageList) {
+    pageList.innerHTML = alerts.map(renderAlertItem).join('');
+    if (pageEmpty) pageEmpty.style.display = alerts.length === 0 ? 'flex' : 'none';
+  }
+
+  // Notification bell badge
+  const badge = document.getElementById('notifBadge');
+  if (badge) badge.textContent = alerts.length;
+
+  return alerts;
+}
+
+function renderPantryGlance() {
+  const row = document.getElementById('pantryScroll');
+  if (!row) return;
+  // Soonest-expiring items first (no-expiry items sort to the end),
+  // capped to a short preview row — same source data as the Pantry page.
+  const sorted = [...PANTRY_ITEMS].sort((a, b) => {
+    const aDays = isNoExpiryItem(a) ? Infinity : a.days;
+    const bDays = isNoExpiryItem(b) ? Infinity : b.days;
+    return aDays - bDays;
+  });
+  row.innerHTML = sorted.slice(0, 8).map(renderPantryCard).join('');
+}
+
+function renderStats() {
+  const totalEl = document.getElementById('statTotalItems');
+  const expiringEl = document.getElementById('statExpiringSoon');
+  const lowStockEl = document.getElementById('statLowStock');
+  const recipeEl = document.getElementById('statRecipeIdeas');
+
+  if (totalEl) totalEl.textContent = PANTRY_ITEMS.length;
+  if (expiringEl) expiringEl.textContent = getExpiringSoonItems().length;
+  if (lowStockEl) lowStockEl.textContent = getLowStockItems().length;
+  if (recipeEl) recipeEl.textContent = getMatchedRecipes().length;
+}
+
 function pantryDaysBadgeColor(days) {
   if (days <= 1) return '#C24A32';
   if (days <= 5) return '#D9A63D';
@@ -235,6 +420,10 @@ function goToPage(pageId, evt) {
 /* ---------- Upload dropzone (UI only for now) ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   renderPantryPage();
+  renderPantryGlance();
+  renderRecipes();
+  renderAlerts();
+  renderStats();
 
   const dropzone = document.getElementById('uploadDropzone');
   const fileInput = document.getElementById('fileInput');
