@@ -1,7 +1,7 @@
 /* ============================================================
    storemex dashboard — script.js
-   Handles: horizontal scroll rows, sidebar page switching,
-   and the upload dropzone (UI only, no backend yet).
+   Handles: pantry data, alerts, shopping swipe deck,
+   sidebar page switching, and dashboard stats.
    ============================================================ */
 
 /* ============================================================
@@ -12,9 +12,6 @@
    ============================================================ */
 
 // Shared illustration markup, keyed by icon type.
-
-const CURRENT_USER_ID = localStorage.getItem("storemex_user_id") || '6b06304b-cf7a-4f97-aa30-7d7a75d032d2';
-
 const PANTRY_ICONS = {
   leaf: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/></svg>`,
   apple: `<svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="36" r="18" fill="#E8694E" stroke="#C24A32" stroke-width="1.8"/><path d="M30 18c0-4 1-6 3-8" stroke="#8C6A34" stroke-width="2" stroke-linecap="round"/><path d="M33 12c3-2 6-2 8 0-2 3-6 3-8 0z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.4"/></svg>`,
@@ -60,16 +57,20 @@ const PANTRY_CATEGORIES = [
 // a short timeline.
 const PANTRY_NO_EXPIRY_CATEGORIES = ['grains', 'pulses'];
 
-// Real pantry data — starts empty. Items are added via the "Add
-// Item" modal (or Scan Product, once that's wired up). Every item
-// needs: name, category (must match a key above), icon (must match
-// a key in PANTRY_ICONS), size (the descriptive package text shown
-// on the left of the meta line, e.g. "500 g"), unit (the unit token
-// used for merge/low-stock math — kg/g/L/pcs/pack/units), and qty
-// (a NUMBER, decimals allowed — e.g. 1.5 for 1.5 kg tomatoes).
-// "days" is only used for perishables — grains/pulses categories are
-// exempt from expiry tracking regardless (see PANTRY_NO_EXPIRY_CATEGORIES).
-const PANTRY_ITEMS = [];
+// Real pantry data. Seeded with a few out-of-stock staples (qty 0)
+// so Unavailable alerts and the Shopping List have something to
+// show. Adding the same name again via the Add Item modal merges
+// into the existing entry and raises qty from 0.
+// Every item needs: name, category (key above), icon (PANTRY_ICONS),
+// size, unit (kg/g/L/ml/pcs/pack/units), qty (number). Optional
+// "days" for perishables — grains/pulses never use an expiry countdown.
+const PANTRY_ITEMS = [
+  { name: 'Rice',   category: 'grains',     icon: 'rice',  size: '0 kg',  unit: 'kg',  qty: 0 },
+  { name: 'Milk',   category: 'dairy',      icon: 'egg',   size: '0 L',   unit: 'L',   qty: 0 },
+  { name: 'Potato', category: 'vegetables', icon: 'leaf',  size: '0 kg',  unit: 'kg',  qty: 0 },
+  { name: 'Onion',  category: 'vegetables', icon: 'leaf',  size: '0 kg',  unit: 'kg',  qty: 0 },
+  { name: 'Bread',  category: 'bakery',     icon: 'bread', size: '0 pcs', unit: 'pcs', qty: 0 }
+];
 
 /* ============================================================
    NAME / UNIT HELPERS
@@ -125,16 +126,27 @@ function formatMeta(item) {
    match whatever is actually in PANTRY_ITEMS.
    ============================================================ */
 
-// Adjustable, not hardcoded — defaults shown here, but both are
-// changeable at runtime from the Alerts page (see the threshold
-// controls + applyThresholds() further down) and every stat/badge/
-// alert reads these two variables live, so a change takes effect
-// everywhere immediately.
-let EXPIRING_SOON_WITHIN_DAYS = 3;
-let LOW_STOCK_QTY_THRESHOLD = 2; // qty at or below this counts as "low stock"
+// Alert thresholds (fixed):
+// - Expiring: days left ≤ 5
+// - Low stock (unit-aware): qty < 1.5 L / 1500 ml / 1.5 kg / 1500 g / 5 units / 2 pack|pcs
+const EXPIRING_SOON_WITHIN_DAYS = 5;
 
 function isNoExpiryItem(item) {
   return PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category) || item.days == null;
+}
+
+function isLowStock(item) {
+  if (!item || item.qty == null || item.qty <= 0) return false; // qty 0 is "Unavailable"
+  const u = String(item.unit || '').toLowerCase();
+  const q = Number(item.qty);
+  if (u === 'l' || u === 'litre' || u === 'liter') return q < 1.5;
+  if (u === 'ml') return q < 1500;
+  if (u === 'kg') return q < 1.5;
+  if (u === 'g') return q < 1500;
+  if (u === 'units' || u === 'unit') return q < 5;
+  if (u === 'pack' || u === 'packet' || u === 'pcs' || u === 'piece' || u === 'pieces') return q < 2;
+  // Unknown unit — treat as low when below 2
+  return q < 2;
 }
 
 function getExpiringSoonItems() {
@@ -145,7 +157,7 @@ function getExpiringSoonItems() {
 
 function getRestockItems() {
   return PANTRY_ITEMS
-    .filter(i => i.qty > 0 && i.qty <= LOW_STOCK_QTY_THRESHOLD)
+    .filter(i => isLowStock(i))
     .sort((a, b) => a.qty - b.qty);
 }
 
@@ -249,26 +261,6 @@ function renderAlertGroups(limitPerGroup) {
     alertSection('Unavailable', '#9B968A', unavailableCards);
 
   return { html, total: expiring.length + restock.length + unavailable.length };
-}
-
-// Reads the two threshold inputs on the Alerts page, applies them,
-// and re-renders everything that depends on them (stats, badges,
-// alerts, the notification bell) so the change is reflected app-wide
-// immediately — no page reload, no hardcoded number involved.
-function applyThresholds() {
-  const expiringInput = document.getElementById('expiringThresholdInput');
-  const lowStockInput = document.getElementById('lowStockThresholdInput');
-
-  const expiringVal = expiringInput ? parseInt(expiringInput.value, 10) : NaN;
-  const lowStockVal = lowStockInput ? parseInt(lowStockInput.value, 10) : NaN;
-
-  if (!isNaN(expiringVal) && expiringVal >= 0) EXPIRING_SOON_WITHIN_DAYS = expiringVal;
-  if (!isNaN(lowStockVal) && lowStockVal >= 0) LOW_STOCK_QTY_THRESHOLD = lowStockVal;
-
-  renderPantryPage();
-  renderPantryGlance();
-  renderAlerts();
-  renderStats();
 }
 
 function renderAlerts() {
@@ -536,7 +528,7 @@ function shoppingStatusForItem(item) {
     const label = item.days <= 0 ? 'Expires Today' : item.days === 1 ? 'Expires in 1 day' : `Expires in ${item.days} days`;
     return { label, color: '#E8694E' };
   }
-  if (item.qty <= LOW_STOCK_QTY_THRESHOLD) return { label: 'Low Stock', color: '#E8C23D' };
+  if (isLowStock(item)) return { label: 'Low Stock', color: '#E8C23D' };
   return { label: 'In Stock', color: '#5C7A45' };
 }
 
@@ -1082,244 +1074,11 @@ document.addEventListener('click', (e) => {
   panel.style.display = 'none';
 });
 
-/* ---------- Upload dropzone (UI only for now) ---------- */
-/* ---------- Upload dropzone handling ---------- */
-
-async function loadPantryFromDatabase() {
-  try {
-    const response = await fetch(`/products/${CURRENT_USER_ID}`);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Failed to load pantry');
-
-    PANTRY_ITEMS.length = 0; // clear the mock seed data
-    data.products.forEach(product => {
-      const category = (product.category || 'others').toLowerCase();
-      const validCategory = PANTRY_CATEGORIES.some(c => c.key === category) ? category : 'others';
-      const qty = product.quantity ?? 1;
-      const unit = product.unit || 'pcs';
-      let days;
-      if (product.expiry_date) {
-        const ms = new Date(product.expiry_date) - new Date();
-        days = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
-      }
-      PANTRY_ITEMS.push({
-        id: product.id,
-        name: product.brand ? `${product.brand} ${product.name}` : product.name,
-        category: validCategory,
-        icon: iconForCategory(validCategory),
-        size: `${formatQty(qty)} ${unit}`,
-        unit, qty,
-        ...(days !== undefined ? { days } : {})
-      });
-    });
-  } catch (err) {
-    console.error('❌ Failed to load pantry from database:', err);
-  } finally {
-    renderPantryPage();
-    renderPantryGlance();
-    renderRecipes();
-    renderAlerts();
-    renderStats();
-  }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  loadPantryFromDatabase();
   renderPantryPage();
   renderPantryGlance();
   renderRecipes();
   renderAlerts();
   renderStats();
   renderHistoryPage();
-
-// Reflect the live threshold values in their input fields.
-  const expiringInput = document.getElementById('expiringThresholdInput');
-  const lowStockInput = document.getElementById('lowStockThresholdInput');
-  if (expiringInput) expiringInput.value = EXPIRING_SOON_WITHIN_DAYS;
-  if (lowStockInput) lowStockInput.value = LOW_STOCK_QTY_THRESHOLD;
-
-  function setupDropzone(dropzoneId, fileInputId, uploadBtnId, fileListId) {
-    const dropzone = document.getElementById(dropzoneId);
-    const fileInput = document.getElementById(fileInputId);
-    const uploadBtn = document.getElementById(uploadBtnId);
-    const fileList = document.getElementById(fileListId);
-
-    if (!dropzone || !fileInput || !fileList) return;
-
-    dropzone.addEventListener('click', () => fileInput.click());
-    if (uploadBtn) {
-      uploadBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        fileInput.click();
-      });
-    }
-
-    ['dragenter', 'dragover'].forEach(evtName => {
-      dropzone.addEventListener(evtName, (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-      });
-    });
-    ['dragleave', 'drop'].forEach(evtName => {
-      dropzone.addEventListener(evtName, (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-      });
-    });
-    dropzone.addEventListener('drop', (e) => {
-      const files = e.dataTransfer.files;
-      if (files && files.length) handleFiles(files, fileList);
-    });
-
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files && fileInput.files.length) {
-        handleFiles(fileInput.files, fileList);
-        fileInput.value = '';
-      }
-    });
-  }
-
-  // Bind Dashboard dropzone and Scan Product page dropzone
-  setupDropzone('uploadDropzone', 'fileInput', 'uploadBtn', 'uploadFileList');
-  setupDropzone('scanDropzone', 'scanFileInput', 'scanUploadBtn', 'scanFileList');
-
-  function handleFiles(fileArray, fileList) {
-    Array.from(fileArray).forEach(file => {
-      const fileRow = addFileRow(file, fileList);
-      scanFile(file, fileRow);
-    });
-  }
-
-  async function scanFile(file, fileRow) {
-    const statusSpan = document.createElement('span');
-    statusSpan.className = 'ufi-status';
-    statusSpan.style.marginLeft = '10px';
-    statusSpan.style.color = '#3b82f6';
-    statusSpan.style.fontSize = '0.85rem';
-    statusSpan.textContent = ' 🔍 Scanning...';
-    fileRow.appendChild(statusSpan);
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const base64Image = e.target.result;
-      try {
-        // Try relative endpoint first, then http://localhost:3000/api/scan as fallback
-        let apiUrl = '/api/scan';
-        if (window.location.protocol === 'file:') {
-          apiUrl = 'http://localhost:3000/api/scan';
-        }
-
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64Image })
-        });
-        const data = await response.json();
-        if (data.success && data.data) {
-          const item = data.data;
-          statusSpan.style.color = '#10b981';
-          statusSpan.textContent = ` ✅ Scanned: ${item.brand ? item.brand + ' ' : ''}${item.name} (${item.quantity || ''} ${item.unit || ''})`;
-
-          // Save to Supabase, then reflect the saved product in PANTRY_ITEMS
-          try {
-            const saveResponse = await fetch('/products', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                user_id: CURRENT_USER_ID,
-                name: item.name,
-                brand: item.brand || null,
-                category: item.category || null,
-                quantity: item.quantity ?? null,
-                unit: item.unit || null,
-                expiry_date: item.expiry_date || null,
-                ai_confidence: item.confidence ?? null
-              })
-            });
-            const savedData = await saveResponse.json();
-            if (!saveResponse.ok) {
-              throw new Error(savedData.error || 'Failed to save product');
-            }
-            addSavedProductToPantryItems(savedData.product);
-          } catch (saveErr) {
-            console.error('Save to Supabase failed:', saveErr);
-            statusSpan.style.color = '#ef4444';
-            statusSpan.textContent += ' — ⚠️ not saved to database';
-          }
-        } else {
-          statusSpan.style.color = '#ef4444';
-          statusSpan.textContent = ' ❌ Scan failed: ' + (data.error || 'Server error');
-        }
-      } catch (err) {
-        console.error('Scan API error:', err);
-        statusSpan.style.color = '#ef4444';
-        statusSpan.textContent = ' ❌ Scan error: Ensure backend server is running';
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function addSavedProductToPantryItems(product) {
-    const category = (product.category || 'others').toLowerCase();
-    const validCategory = PANTRY_CATEGORIES.some(c => c.key === category) ? category : 'others';
-    const qty = product.quantity ?? 1;
-    const unit = product.unit || 'pcs';
-
-    let days;
-    if (product.expiry_date) {
-      const ms = new Date(product.expiry_date) - new Date();
-      days = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
-    }
-
-    PANTRY_ITEMS.push({
-      id: product.id, // real DB id — needed later for consume/delete
-      name: product.brand ? `${product.brand} ${product.name}` : product.name,
-      category: validCategory,
-      icon: iconForCategory(validCategory),
-      size: `${formatQty(qty)} ${unit}`,
-      unit,
-      qty,
-      ...(days !== undefined ? { days } : {})
-    });
-
-    renderPantryPage();
-    renderPantryGlance();
-    renderRecipes();
-    renderAlerts();
-    renderStats();
-    addHistoryEntry(`${product.name} was scanned and added to the pantry`);
-  }
-
-  function addFileRow(file, fileList) {
-    const row = document.createElement('div');
-    row.className = 'upload-file-item';
-    row.innerHTML = `
-      <div class="ufi-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <path d="M14 2v6h6"/>
-        </svg>
-      </div>
-      <span class="ufi-name">${escapeHtml(file.name)}</span>
-      <span class="ufi-size">${formatSize(file.size)}</span>
-      <button class="ufi-remove" type="button" title="Remove">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    `;
-    row.querySelector('.ufi-remove').addEventListener('click', () => row.remove());
-    fileList.appendChild(row);
-    return row;
-  }
-
-  function formatSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
 });
