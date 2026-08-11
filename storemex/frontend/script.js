@@ -48,18 +48,20 @@ const PANTRY_CATEGORIES = [
   { key: 'bakery',      label: 'Bakery',               icon: 'bread' },
   { key: 'snacks',      label: 'Snacks',               icon: 'snack' },
   { key: 'beverages',   label: 'Beverages',            icon: 'bottle'},
-  { key: 'pantryStaples', label: 'Pantry Staples',     icon: 'jar'   },
-  { key: 'dryGoods',    label: 'Dry Goods',            icon: 'rice'  },
   { key: 'others',      label: 'Others',               icon: 'jar'   }
 ];
 
-// Categories that are restock-focused / non-perishable — items here
-// are shown without any expiry date or "days left" countdown.
-const PANTRY_NO_EXPIRY_CATEGORIES = ['pantryStaples', 'dryGoods'];
+// Categories that are restock-focused / non-perishable (grains, pulses,
+// and similar dry goods) — items here are shown without any expiry
+// date or "days left" countdown, since they genuinely don't spoil on
+// a short timeline.
+const PANTRY_NO_EXPIRY_CATEGORIES = ['grains', 'pulses'];
 
 // Sample stock data — swap this out for real pantry data later.
 // Every item needs: name, category (must match a key above),
-// icon (must match a key in PANTRY_ICONS), meta (qty text) and days (days left).
+// icon (must match a key in PANTRY_ICONS), meta (qty text). "days" is
+// only used for perishables — grains/pulses categories are exempt
+// from expiry tracking regardless (see PANTRY_NO_EXPIRY_CATEGORIES).
 const PANTRY_ITEMS = [
   { name: 'Tomatoes',      category: 'vegetables', icon: 'leaf',   meta: '500 g · Qty: 4',  days: 1  },
   { name: 'Onions',        category: 'vegetables', icon: 'leaf',   meta: '1 kg · Qty: 2',   days: 40 },
@@ -69,13 +71,13 @@ const PANTRY_ITEMS = [
   { name: 'Apples',        category: 'fruits',     icon: 'apple',  meta: '6 pcs · Qty: 6',  days: 10 },
   { name: 'Bananas',       category: 'fruits',     icon: 'apple',  meta: '1 dozen · Qty: 12', days: 4 },
 
-  { name: 'Basmati Rice',  category: 'grains',     icon: 'rice',   meta: '5 kg · Qty: 1',   days: 120 },
-  { name: 'Wheat Flour',   category: 'grains',     icon: 'rice',   meta: '5 kg · Qty: 1',   days: 90  },
-  { name: 'Oats',          category: 'grains',     icon: 'rice',   meta: '500 g · Qty: 1',  days: 60  },
+  { name: 'Basmati Rice',  category: 'grains',     icon: 'rice',   meta: '5 kg · Qty: 1'  },
+  { name: 'Wheat Flour',   category: 'grains',     icon: 'rice',   meta: '5 kg · Qty: 1'  },
+  { name: 'Oats',          category: 'grains',     icon: 'rice',   meta: '500 g · Qty: 1' },
 
-  { name: 'Toor Dal',      category: 'pulses',     icon: 'rice',   meta: '1 kg · Qty: 1',   days: 180 },
-  { name: 'Chickpeas',     category: 'pulses',     icon: 'rice',   meta: '500 g · Qty: 1',  days: 150 },
-  { name: 'Moong Dal',     category: 'pulses',     icon: 'rice',   meta: '1 kg · Qty: 1',   days: 180 },
+  { name: 'Toor Dal',      category: 'pulses',     icon: 'rice',   meta: '1 kg · Qty: 1'  },
+  { name: 'Chickpeas',     category: 'pulses',     icon: 'rice',   meta: '500 g · Qty: 1' },
+  { name: 'Moong Dal',     category: 'pulses',     icon: 'rice',   meta: '1 kg · Qty: 1'  },
 
   { name: 'Amul Milk',     category: 'dairy',      icon: 'bottle', meta: '1 L · Qty: 1',    days: 2  },
   { name: 'Eggs',          category: 'dairy',      icon: 'egg',    meta: '8 pcs · Qty: 6',  days: 5  },
@@ -89,43 +91,10 @@ const PANTRY_ITEMS = [
 
   { name: 'Maggi',         category: 'snacks',     icon: 'snack',  meta: '4 packets · Qty: 3', days: 15 },
   { name: 'Potato Chips',  category: 'snacks',     icon: 'snack',  meta: '2 packets · Qty: 2', days: 25 },
-  { name: 'Namkeen',       category: 'snacks',     icon: 'snack',  meta: '1 packet · Qty: 1',  days: 20 },
+  { name: 'Namkeen',       category: 'snacks',     icon: 'snack',  meta: '1 packet · Qty: 0',  days: 20 },
 
   { name: 'Cold Drink',    category: 'beverages',  icon: 'bottle', meta: '2 L · Qty: 1',    days: 60 },
-  { name: 'Orange Juice',  category: 'beverages',  icon: 'bottle', meta: '1 L · Qty: 1',    days: 7  },
-
-  // 🏠 Pantry Staples — restock-focused, no expiry tracking
-  { name: 'Salt',           category: 'pantryStaples', icon: 'jar', meta: '1 kg · Qty: 1' },
-  { name: 'Sugar',          category: 'pantryStaples', icon: 'jar', meta: '1 kg · Qty: 1' },
-  { name: 'Baking Soda',    category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
-  { name: 'Baking Powder',  category: 'pantryStaples', icon: 'jar', meta: '100 g · Qty: 1' },
-  { name: 'Cornstarch',     category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
-  { name: 'Vinegar',        category: 'pantryStaples', icon: 'bottle', meta: '500 ml · Qty: 1' },
-  { name: 'Soy Sauce',      category: 'pantryStaples', icon: 'bottle', meta: '500 ml · Qty: 1' },
-  { name: 'Cooking Oil',    category: 'pantryStaples', icon: 'bottle', meta: '1 L · Qty: 1' },
-  { name: 'Ghee',           category: 'pantryStaples', icon: 'jar', meta: '500 g · Qty: 1' },
-  { name: 'Honey',          category: 'pantryStaples', icon: 'jar', meta: '250 g · Qty: 1' },
-  { name: 'Maple Syrup',    category: 'pantryStaples', icon: 'bottle', meta: '250 ml · Qty: 1' },
-  { name: 'Dry Spices',     category: 'pantryStaples', icon: 'jar', meta: 'Assorted · Qty: 1' },
-  { name: 'Spice Mixes',    category: 'pantryStaples', icon: 'jar', meta: 'Assorted · Qty: 1' },
-  { name: 'Tea',            category: 'pantryStaples', icon: 'jar', meta: '250 g · Qty: 1' },
-  { name: 'Coffee',         category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
-  { name: 'Cocoa Powder',   category: 'pantryStaples', icon: 'jar', meta: '200 g · Qty: 1' },
-
-  // 🌾 Dry Goods — long-lasting, no expiry tracking
-  { name: 'Rice',           category: 'dryGoods', icon: 'rice', meta: '5 kg · Qty: 1' },
-  { name: 'Wheat Flour / Atta', category: 'dryGoods', icon: 'rice', meta: '5 kg · Qty: 1' },
-  { name: 'Maida',          category: 'dryGoods', icon: 'rice', meta: '1 kg · Qty: 1' },
-  { name: 'Semolina / Suji', category: 'dryGoods', icon: 'rice', meta: '1 kg · Qty: 1' },
-  { name: 'Poha',           category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
-  { name: 'Oats',           category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
-  { name: 'Dry Pasta',      category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
-  { name: 'Dry Noodles',    category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
-  { name: 'Dried Beans',    category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
-  { name: 'Lentils / Dal',  category: 'dryGoods', icon: 'rice', meta: '1 kg · Qty: 1' },
-  { name: 'Chickpeas',      category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
-  { name: 'Rajma',          category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' },
-  { name: 'Dry Peas',       category: 'dryGoods', icon: 'rice', meta: '500 g · Qty: 1' }
+  { name: 'Orange Juice',  category: 'beverages',  icon: 'bottle', meta: '1 L · Qty: 1',    days: 7  }
 ];
 
 /* ============================================================
@@ -154,11 +123,25 @@ function getExpiringSoonItems() {
     .sort((a, b) => a.days - b.days);
 }
 
-function getLowStockItems() {
+function getRestockItems() {
   return PANTRY_ITEMS
     .map(i => ({ item: i, qty: parseQty(i.meta) }))
-    .filter(x => x.qty != null && x.qty <= LOW_STOCK_QTY_THRESHOLD)
+    .filter(x => x.qty != null && x.qty > 0 && x.qty <= LOW_STOCK_QTY_THRESHOLD)
     .sort((a, b) => a.qty - b.qty)
+    .map(x => x.item);
+}
+
+// Items that are genuinely out of stock. Since PANTRY_ITEMS only ever
+// contains products the person has actually added to their pantry,
+// any item sitting at Qty: 0 here means it was added before and has
+// since run out — not a random item that was never stocked. Products
+// that were never added simply never appear in PANTRY_ITEMS at all,
+// so this list can never include something the person didn't already
+// have.
+function getUnavailableItems() {
+  return PANTRY_ITEMS
+    .map(i => ({ item: i, qty: parseQty(i.meta) }))
+    .filter(x => x.qty === 0)
     .map(x => x.item);
 }
 
@@ -216,76 +199,68 @@ function renderRecipes() {
   }
 }
 
-const ALERT_EXPIRY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="#E8694E" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>`;
-const ALERT_LOWSTOCK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="#E8C23D" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>`;
-const ALERT_CHEVRON = `<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>`;
+/* ---------- Grouped alerts: Expiring Soon / Restock / Unavailable ---------- */
 
-function renderAlertItem(alert) {
+function alertCard(name, valueLabel, valueColor) {
   return `
-    <div class="alert-item">
-      <div class="alert-dot" style="background:${alert.dotBg};">${alert.icon}</div>
-      <div class="alert-text">
-        <div class="alert-title">${alert.title}</div>
-        <div class="alert-sub">${alert.sub}</div>
-      </div>
-      ${ALERT_CHEVRON}
+    <div class="alert-card">
+      <div class="alert-card-name">${name}</div>
+      <div class="alert-card-value" style="color:${valueColor};">${valueLabel}</div>
     </div>`;
 }
 
-// Builds the live list of alerts straight from PANTRY_ITEMS: an expiry
-// alert for anything expiring within EXPIRING_SOON_WITHIN_DAYS days, and
-// a low-stock alert for anything at/under LOW_STOCK_QTY_THRESHOLD.
-function buildAlerts() {
-  const alerts = [];
+function alertSection(title, dotColor, cardsHtml) {
+  if (!cardsHtml) return '';
+  return `
+    <div class="alert-section">
+      <div class="alert-section-title"><span class="alert-section-dot" style="background:${dotColor};"></span>${title}</div>
+      <div class="alert-card-grid">${cardsHtml}</div>
+    </div>`;
+}
 
-  getExpiringSoonItems().forEach(item => {
-    const label = item.days <= 0 ? 'expires today' : item.days === 1 ? 'expires tomorrow' : `expires in ${item.days} days`;
-    alerts.push({
-      type: 'expiry',
-      days: item.days,
-      title: `${item.name} ${label}`,
-      sub: `${item.name} · ${item.meta.split('·')[0].trim()}`,
-      icon: ALERT_EXPIRY_ICON,
-      dotBg: 'rgba(194,74,50,0.18)'
-    });
-  });
+function renderAlertGroups(limitPerGroup) {
+  const expiring = getExpiringSoonItems();
+  const restock = getRestockItems();
+  const unavailable = getUnavailableItems();
 
-  getLowStockItems().forEach(item => {
-    const qty = parseQty(item.meta);
-    alerts.push({
-      type: 'lowstock',
-      title: `${item.name} is running low`,
-      sub: `Only ${qty} left`,
-      icon: ALERT_LOWSTOCK_ICON,
-      dotBg: 'rgba(217,166,61,0.2)'
-    });
-  });
+  const expiringCards = (limitPerGroup ? expiring.slice(0, limitPerGroup) : expiring)
+    .map(item => alertCard(item.name, item.days <= 0 ? 'Expires today' : item.days === 1 ? 'Expires in 1 day' : `Expires in ${item.days} days`, '#E8694E'))
+    .join('');
 
-  return alerts;
+  const restockCards = (limitPerGroup ? restock.slice(0, limitPerGroup) : restock)
+    .map(item => alertCard(item.name, `${parseQty(item.meta)} in stock`, '#E8C23D'))
+    .join('');
+
+  const unavailableCards = (limitPerGroup ? unavailable.slice(0, limitPerGroup) : unavailable)
+    .map(item => alertCard(item.name, 'Out of stock', 'var(--sidebar-text-dim)'))
+    .join('');
+
+  const html =
+    alertSection('Expiring Soon', '#E8694E', expiringCards) +
+    alertSection('Restock', '#E8C23D', restockCards) +
+    alertSection('Unavailable', '#9B968A', unavailableCards);
+
+  return { html, total: expiring.length + restock.length + unavailable.length };
 }
 
 function renderAlerts() {
-  const alerts = buildAlerts();
+  // Homepage panel — compact preview, a couple of cards per group
+  const homeContainer = document.getElementById('alertsList');
+  const homeResult = renderAlertGroups(2);
+  if (homeContainer) homeContainer.innerHTML = homeResult.html;
 
-  // Homepage panel — capped to a short preview list
-  const homeList = document.getElementById('alertsList');
-  if (homeList) {
-    homeList.innerHTML = alerts.slice(0, 4).map(renderAlertItem).join('');
-  }
-
-  // Full Alerts page — everything, or an empty state
-  const pageList = document.getElementById('alertsPageList');
+  // Full Alerts page — everything, grouped, or an empty state
+  const pageContainer = document.getElementById('alertsPageList');
   const pageEmpty = document.getElementById('alertsPageEmpty');
-  if (pageList) {
-    pageList.innerHTML = alerts.map(renderAlertItem).join('');
-    if (pageEmpty) pageEmpty.style.display = alerts.length === 0 ? 'flex' : 'none';
-  }
+  const pageResult = renderAlertGroups(null);
+  if (pageContainer) pageContainer.innerHTML = pageResult.html;
+  if (pageEmpty) pageEmpty.style.display = pageResult.total === 0 ? 'flex' : 'none';
 
-  // Notification bell badge
+  // Notification bell badge reflects the real total
   const badge = document.getElementById('notifBadge');
-  if (badge) badge.textContent = alerts.length;
+  if (badge) badge.textContent = pageResult.total;
 
-  return alerts;
+  return pageResult.total;
 }
 
 function renderPantryGlance() {
@@ -309,7 +284,7 @@ function renderStats() {
 
   if (totalEl) totalEl.textContent = PANTRY_ITEMS.length;
   if (expiringEl) expiringEl.textContent = getExpiringSoonItems().length;
-  if (lowStockEl) lowStockEl.textContent = getLowStockItems().length;
+  if (lowStockEl) lowStockEl.textContent = getRestockItems().length;
   if (recipeEl) recipeEl.textContent = getMatchedRecipes().length;
 }
 
