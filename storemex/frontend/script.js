@@ -392,6 +392,118 @@ function goToPage(pageId, evt) {
   showPage(null, pageId, null);
 }
 
+/* ---------- Add Item modal ---------- */
+
+// Maps a category key to the icon used for it — kept in sync with
+// PANTRY_CATEGORIES so a manually-added item renders consistently
+// with the rest of the app.
+function iconForCategory(categoryKey) {
+  const cat = PANTRY_CATEGORIES.find(c => c.key === categoryKey);
+  return cat ? cat.icon : 'jar';
+}
+
+function openAddItemModal(evt) {
+  if (evt) evt.preventDefault();
+  const overlay = document.getElementById('addItemOverlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeAddItemModal() {
+  const overlay = document.getElementById('addItemOverlay');
+  if (overlay) overlay.style.display = 'none';
+  const form = document.getElementById('addItemForm');
+  if (form) form.reset();
+}
+
+function handleAddItemSubmit(evt) {
+  evt.preventDefault();
+
+  const nameInput = document.getElementById('addItemName');
+  const qtyInput = document.getElementById('addItemQty');
+  const unitSelect = document.getElementById('addItemUnit');
+  const categorySelect = document.getElementById('addItemCategory');
+  const expiryInput = document.getElementById('addItemExpiry');
+
+  const name = nameInput.value.trim();
+  const qty = parseInt(qtyInput.value, 10);
+  const unit = unitSelect.value;
+  const category = categorySelect.value;
+  const expiryValue = expiryInput.value; // '' if left blank (optional)
+
+  if (!name || isNaN(qty) || qty < 0) return; // required fields guard (inputs are also marked required)
+
+  // Expiry date is optional. If given, convert to "days left" from
+  // today; if left blank, the item behaves exactly like a no-expiry
+  // pantry staple (shows "In Stock" instead of a countdown) — same
+  // path used for rice/dal, so this covers both "genuinely doesn't
+  // expire" and "has an expiry but I don't know/can't read the date".
+  let days;
+  if (expiryValue) {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiryDate = new Date(expiryValue + 'T00:00:00');
+    days = Math.round((expiryDate - today) / msPerDay);
+    if (days < 0) days = 0;
+  }
+
+  const newItem = {
+    name,
+    category,
+    icon: iconForCategory(category),
+    meta: `${qty} ${unit} · Qty: ${qty}`,
+    ...(days !== undefined ? { days } : {})
+  };
+
+  PANTRY_ITEMS.push(newItem);
+
+  closeAddItemModal();
+  renderPantryPage();
+  renderPantryGlance();
+  renderRecipes();
+  renderAlerts();
+  renderStats();
+}
+
+/* ---------- Notification popover ---------- */
+
+function toggleNotifPanel(evt, forceState) {
+  if (evt) evt.stopPropagation();
+  const panel = document.getElementById('notifPanel');
+  if (!panel) return;
+
+  const shouldShow = forceState !== undefined ? forceState : panel.style.display === 'none';
+
+  if (shouldShow) {
+    const expiringCount = getExpiringSoonItems().length;
+    const restockCount = getRestockItems().length;
+    const unavailableCount = getUnavailableItems().length;
+
+    const expEl = document.getElementById('notifCountExpiring');
+    const resEl = document.getElementById('notifCountRestock');
+    const unaEl = document.getElementById('notifCountUnavailable');
+    const emptyEl = document.getElementById('notifPanelEmpty');
+
+    if (expEl) expEl.textContent = expiringCount;
+    if (resEl) resEl.textContent = restockCount;
+    if (unaEl) unaEl.textContent = unavailableCount;
+    if (emptyEl) emptyEl.style.display = (expiringCount + restockCount + unavailableCount === 0) ? 'block' : 'none';
+
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+// Clicking anywhere outside the notification popover closes it
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('notifPanel');
+  const bell = document.getElementById('notifBellBtn');
+  if (!panel || panel.style.display === 'none') return;
+  if (panel.contains(e.target) || (bell && bell.contains(e.target))) return;
+  panel.style.display = 'none';
+});
+
 /* ---------- Upload dropzone (UI only for now) ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   renderPantryPage();
