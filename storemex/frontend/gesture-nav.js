@@ -211,8 +211,8 @@ function classifyFrame(landmarks) {
     const dx = last.x - first.x;
     const dt = last.t - first.t;
     if (dt > 0 && dt < 700 && Math.abs(dx) > 0.22) {
-      if (dx > 0) fireGesture("SWIPE LEFT");
-      else fireGesture("SWIPE RIGHT");
+      if (dx > 0) fireGesture("SWIPE RIGHT");
+      else fireGesture("SWIPE LEFT");
       palmHistory = [];
     }
   }
@@ -319,4 +319,28 @@ toggleBtn.addEventListener("click", async () => {
   toggleBtn.textContent = "Disable gesture nav";
   modelStatus.textContent = "tracking";
   loop();
+});
+
+// ---------------------------------------------------------------
+// SHOPPING DECK — gesture controls
+// ---------------------------------------------------------------
+
+window.addEventListener("gnav:swipe-left", () => {
+  // Only act when the Shopping page is currently visible
+  const shoppingPage = document.getElementById("page-shopping");
+  if (!shoppingPage || !shoppingPage.classList.contains("active")) return;
+
+  if (typeof decideCurrentCard === "function") {
+    decideCurrentCard("left");
+  }
+});
+
+window.addEventListener("gnav:swipe-right", () => {
+  // Only act when the Shopping page is currently visible
+  const shoppingPage = document.getElementById("page-shopping");
+  if (!shoppingPage || !shoppingPage.classList.contains("active")) return;
+
+  if (typeof decideCurrentCard === "function") {
+    decideCurrentCard("right");
+  }
 });
