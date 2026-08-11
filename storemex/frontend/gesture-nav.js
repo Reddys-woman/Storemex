@@ -5,18 +5,22 @@
    HOW IT WORKS
    - Injects its own small floating widget (camera + toggle button)
      into the page — you don't need to add any HTML for it.
-   - Counts extended fingers (0-5) to switch between the first six
+   - Counts extended fingers (1-5) to switch between the first five
      sidebar tabs, by *clicking the real nav <a> elements* — so it
      reuses your existing showPage() logic exactly as-is.
+     1=Dashboard, 2=Pantry, 3=Scan, 4=Recipes, 5=Shopping.
+     A closed fist (0 fingers) is ignored on purpose — it's the
+     "hand not posed yet" state, not a nav command, so it doesn't
+     accidentally fire a switch every time the hand relaxes.
    - Detects a fast open-hand swipe and a pinch, and dispatches them
      as normal browser CustomEvents on `window` so you (or I) can
      wire them to real pantry-card actions once those cards' markup
      is known — see the bottom of this file.
 
-   LIMITATION: a single hand only gives 0-5, so this only reaches
-   Dashboard/Pantry/Scan/Recipes/Shopping/Alerts — not
-   Analytics/History/Settings. Extendable later (e.g. two-hand count,
-   or fist-held-then-count) if you want all 9.
+   LIMITATION: a single hand only gives 1-5, so this only reaches
+   Dashboard/Pantry/Scan/Recipes/Shopping — not
+   Alerts/Analytics/History/Settings. Extendable later (e.g. two-hand
+   count, or fist-held-then-count) if you want all 9.
 
    USAGE: add this at the end of <body>, after script.js:
      <script type="module" src="gesture-nav.js"></script>
@@ -27,8 +31,9 @@ import {
   FilesetResolver,
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
 
-// ---- maps finger count -> the data-page value on your real nav items ----
-const NAV_PAGE_KEYS = ["dashboard", "pantry", "scan", "recipes", "shopping", "alerts"];
+// ---- maps finger count (1-5) -> the data-page value on your real nav items ----
+// index 0 of this array corresponds to a count of 1, not 0 — see switchToNavIndex.
+const NAV_PAGE_KEYS = ["dashboard", "pantry", "scan", "recipes", "shopping"];
 
 // ---------------------------------------------------------------
 // 1. Inject the floating widget UI
@@ -141,8 +146,9 @@ function countExtendedFingers(landmarks) {
 }
 
 function switchToNavIndex(count) {
-  if (count < 0 || count >= NAV_PAGE_KEYS.length) return;
-  const pageKey = NAV_PAGE_KEYS[count];
+  // count is a raw finger count (1-5); the array is 0-indexed, so shift by 1.
+  if (count < 1 || count > NAV_PAGE_KEYS.length) return;
+  const pageKey = NAV_PAGE_KEYS[count - 1];
   const navEl = document.querySelector(`.nav-item[data-page="${pageKey}"]`);
   if (!navEl) return;
   navEl.click(); // fires the real onclick="showPage(event,...)" handler
@@ -154,6 +160,11 @@ function updateNavFromCount(count) {
   if (navCountHistory.length > NAV_STABLE_FRAMES) navCountHistory.shift();
   if (navCountHistory.length < NAV_STABLE_FRAMES) return;
   if (!navCountHistory.every((c) => c === count)) return;
+
+  // 0 fingers (closed fist / hand relaxing) is not a nav command — ignore it
+  // so it doesn't reset activeNavIndex and re-fire the same tab when the
+  // hand re-forms the same count a moment later.
+  if (count < 1 || count > NAV_PAGE_KEYS.length) return;
 
   const now = performance.now();
   if (now - lastNavSwitchAt < NAV_COOLDOWN_MS) return;
