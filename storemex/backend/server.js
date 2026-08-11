@@ -11,6 +11,36 @@ app.get('/', (req, res) => {
   res.send('SmartPantry backend is running!');
 });
 
+// ---------- AUTH ----------
+
+// Signup
+app.post('/signup', async (req, res) => {
+  const { email, password } = req.body;
+
+  const { data, error } = await supabase.auth.signUp({ email, password });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({ message: 'Signup successful', user: data.user });
+});
+
+// Login
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({ message: 'Login successful', user: data.user, session: data.session });
+});
+
+// ---------- AI SCAN (Yamini) ----------
+
 // Direct Barcode Lookup API (Zero Gemini Quota)
 app.get('/api/barcode/:code', async (req, res) => {
   try {
@@ -39,36 +69,9 @@ app.post('/api/scan', async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
-app.post('/signup', async (req, res) => {
-  const { email, password } = req.body;
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
 
-  if (error) {
-    return res.status(400).json({ error: error.message });
-  }
 
-  res.status(200).json({ message: 'Signup successful', user: data.user });
-});
-
-const PORT = 3000;
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return res.status(400).json({ error: error.message });
-  }
-
-  res.status(200).json({ message: 'Login successful', user: data.user, session: data.session });
-});
 
 app.post('/products', async (req, res) => {
   const { user_id, name, brand, category, quantity, unit, expiry_date, ai_confidence } = req.body;
@@ -85,7 +88,7 @@ app.post('/products', async (req, res) => {
   res.status(200).json({ message: 'Product added', product: data[0] });
 });
 
-
+// Get all products for a user, with freshness/quantity status
 app.get('/products/:user_id', async (req, res) => {
   const { user_id } = req.params;
 
@@ -98,7 +101,94 @@ app.get('/products/:user_id', async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  res.status(200).json({ products: data });
+  const productsWithStatus = data.map(product => {
+    const daysLeft = (new Date(product.expiry_date) - new Date()) / (1000 * 60 * 60 * 24);
+
+    let freshness_status = 'fresh';
+    if (daysLeft <= 1) freshness_status = 'critical';
+    else if (daysLeft <= 4) freshness_status = 'expiring';
+
+    const quantity_status = product.quantity <= 2 ? 'low' : 'normal';
+
+    return { ...product, freshness_status, quantity_status };
+  });
+
+  res.status(200).json({ products: productsWithStatus });
+});
+
+const PORT = 3000;
+// ---------- CONSUME / UPDATE QUANTITY (swipe gesture) ----------
+app.patch('/products/:id/consume', async (req, res) => {
+  const { id } = req.params;
+  const { amount } = req.body; // how much to reduce
+
+  const { data: product, error: fetchError } = await supabase
+    .from('products')
+    .select('quantity')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) return res.status(400).json({ error: fetchError.message });
+
+  const newQuantity = Math.max(0, product.quantity - (amount || 1));
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ quantity: newQuantity })
+    .eq('id', id)
+    .select();
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.status(200).json({ message: 'Consumed', product: data[0] });
+});
+
+// ---------- DELETE PRODUCT (swipe gesture) ----------
+app.delete('/products/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabase.from('products').delete().eq('id', id);
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.status(200).json({ message: 'Product deleted' });
+});
+
+// ---------- SHOPPING LIST (drag gesture) ----------
+app.post('/shopping-list', async (req, res) => {
+  const { user_id, product_id, name } = req.body;
+
+  const { data, error } = await supabase
+    .from('shopping_list')
+    .insert([{ user_id, product_id, name }])
+    .select();
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.status(200).json({ message: 'Added to shopping list', item: data[0] });
+});
+
+app.get('/shopping-list/:user_id', async (req, res) => {
+  const { user_id } = req.params;
+
+  const { data, error } = await supabase
+    .from('shopping_list')
+    .select('*')
+    .eq('user_id', user_id);
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.status(200).json({ shopping_list: data });
+});
+
+app.delete('/shopping-list/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabase.from('shopping_list').delete().eq('id', id);
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.status(200).json({ message: 'Removed from shopping list' });
 });
 
 app.get('/api/alexa/pantry', async (req, res) => {
