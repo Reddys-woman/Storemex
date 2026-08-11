@@ -1,10 +1,23 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
+const fs = require('fs');
+const dotenv = require('dotenv');
+
+// Check local .env, ai/.env, and root .env
+[
+  path.join(__dirname, '.env'),
+  path.join(__dirname, 'ai', '.env'),
+  path.join(__dirname, '..', '.env')
+].forEach((envPath) => {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+});
+
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
+const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder-project.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'placeholder-anon-key';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = supabase;
