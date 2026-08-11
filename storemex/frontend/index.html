@@ -29,7 +29,6 @@
     <a class="nav-item" href="#" data-page="recipes" onclick="showPage(event,'recipes',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3v6a6 6 0 0 0 12 0V3M9 3v6M15 3v6M12 15v6"/></svg><span>Recipes</span></a>
     <a class="nav-item" href="#" data-page="shopping" onclick="showPage(event,'shopping',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg><span>Shopping List</span></a>
     <a class="nav-item" href="#" data-page="alerts" onclick="showPage(event,'alerts',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9a2 2 0 0 1 3.4 0l8 13.6A2 2 0 0 1 20 20.5H4a2 2 0 0 1-1.7-3l8-13.6z"/><path d="M12 9.5v4M12 16.5h.01"/></svg><span>Alerts</span></a>
-    <a class="nav-item" href="#" data-page="analytics" onclick="showPage(event,'analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M11 20V4M18 20v-7"/></svg><span>Analytics</span></a>
     <a class="nav-item" href="#" data-page="history" onclick="showPage(event,'history',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>History</span></a>
     <a class="nav-item" href="#" data-page="settings" onclick="showPage(event,'settings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V20a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H4a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.6V4a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10c.1.7.6 1.3 1.3 1.5h.2a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></a>
   </nav>
@@ -67,7 +66,7 @@
     <div class="topbar-right">
       <div class="search-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" placeholder="Search anything in my pantry...">
+        <input type="text" id="dashboardSearchInput" placeholder="Search by name, category, 'expiring', 'unavailable'..." oninput="performSearch(this.value, 'dashboardSearchInput')">
       </div>
       <div class="notif-wrap">
         <button class="icon-btn" id="notifBellBtn" onclick="toggleNotifPanel(event)">
@@ -227,11 +226,6 @@
             <div class="qtitle">View Shopping List</div>
             <div class="qsub">See items to buy</div>
           </div>
-          <div class="quick-item" onclick="goToPage('analytics', event)">
-            <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><path d="M4 20V10M11 20V4M18 20v-7"/></svg></div>
-            <div class="qtitle">Consumption Log</div>
-            <div class="qsub">Track what you used</div>
-          </div>
         </div>
       </div>
 
@@ -263,10 +257,16 @@
       <h2>Pantry</h2>
       <p>Every item you have on hand, grouped by category.</p>
     </div>
-    <button class="upload-btn" onclick="openAddItemModal(event)" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-      Add Item
-    </button>
+    <div class="pantry-header-actions">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="pantrySearchInput" placeholder="Search by name, category, 'expiring', 'unavailable'..." oninput="performSearch(this.value, 'pantrySearchInput')">
+      </div>
+      <button class="upload-btn" onclick="openAddItemModal(event)" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add Item
+      </button>
+    </div>
   </div>
 
   <!-- Category sections are injected here by script.js — a category
@@ -368,23 +368,6 @@
   </div>
 </div>
 
-<!-- ================= ANALYTICS PAGE ================= -->
-<div id="page-analytics" class="page">
-  <div class="page-header">
-    <div>
-      <h2>Analytics</h2>
-      <p>Insights into your pantry habits and spending.</p>
-    </div>
-  </div>
-  <div class="page-empty">
-    <div class="page-empty-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><path d="M4 20V10M11 20V4M18 20v-7"/></svg>
-    </div>
-    <h3>Analytics coming soon</h3>
-    <p>This page will show charts on consumption, waste &amp; spending trends.</p>
-  </div>
-</div>
-
 <!-- ================= HISTORY PAGE ================= -->
 <div id="page-history" class="page">
   <div class="page-header">
@@ -393,12 +376,17 @@
       <p>A timeline of everything added, used &amp; removed.</p>
     </div>
   </div>
-  <div class="page-empty">
+
+  <!-- Populated by script.js whenever an item is removed (or restored) -->
+  <div id="historyList" class="history-list"></div>
+
+  <!-- Shown only when there's no activity logged yet -->
+  <div class="page-empty" id="historyEmptyState" style="display:flex;">
     <div class="page-empty-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
     </div>
-    <h3>History coming soon</h3>
-    <p>This page will show a full activity log of your pantry over time.</p>
+    <h3>Nothing here yet</h3>
+    <p>Removed and restored pantry items will show up here as a timeline.</p>
   </div>
 </div>
 
@@ -437,7 +425,7 @@
       <div class="form-row">
         <div>
           <label class="form-label" for="addItemQty">Quantity</label>
-          <input class="form-input" type="number" id="addItemQty" min="0" step="1" placeholder="e.g. 2" required>
+          <input class="form-input" type="number" id="addItemQty" min="0" step="0.01" placeholder="e.g. 1.5" required>
         </div>
         <div>
           <label class="form-label" for="addItemUnit">Unit</label>
@@ -475,6 +463,12 @@
       </div>
     </form>
   </div>
+</div>
+
+<!-- ================= UNDO TOAST ================= -->
+<div class="undo-toast" id="undoToast">
+  <span id="undoToastMessage">Item removed from pantry</span>
+  <button type="button" class="undo-toast-btn" id="undoToastBtn">Undo</button>
 </div>
 
 <script src="script.js"></script>

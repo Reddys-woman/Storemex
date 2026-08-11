@@ -58,44 +58,94 @@ const PANTRY_CATEGORIES = [
 const PANTRY_NO_EXPIRY_CATEGORIES = ['grains', 'pulses'];
 
 // Sample stock data — swap this out for real pantry data later.
-// Every item needs: name, category (must match a key above),
-// icon (must match a key in PANTRY_ICONS), meta (qty text). "days" is
-// only used for perishables — grains/pulses categories are exempt
-// from expiry tracking regardless (see PANTRY_NO_EXPIRY_CATEGORIES).
+// Every item needs: name, category (must match a key above), icon
+// (must match a key in PANTRY_ICONS), size (the descriptive package
+// text shown on the left of the meta line, e.g. "500 g"), unit (the
+// unit token used for merge/low-stock math — kg/g/L/pcs/pack/units),
+// and qty (a NUMBER, decimals allowed — e.g. 1.5 for 1.5 kg tomatoes).
+// "days" is only used for perishables — grains/pulses categories are
+// exempt from expiry tracking regardless (see PANTRY_NO_EXPIRY_CATEGORIES).
 const PANTRY_ITEMS = [
-  { name: 'Tomatoes',      category: 'vegetables', icon: 'leaf',   meta: '500 g · Qty: 4',  days: 1  },
-  { name: 'Onions',        category: 'vegetables', icon: 'leaf',   meta: '1 kg · Qty: 2',   days: 40 },
-  { name: 'Potatoes',      category: 'vegetables', icon: 'leaf',   meta: '2 kg · Qty: 1',   days: 20 },
-  { name: 'Spinach',       category: 'vegetables', icon: 'leaf',   meta: '250 g · Qty: 1',  days: 2  },
+  { name: 'Tomatoes',      category: 'vegetables', icon: 'leaf',   size: '500 g',     unit: 'g',    qty: 4,  days: 1  },
+  { name: 'Onions',        category: 'vegetables', icon: 'leaf',   size: '1 kg',      unit: 'kg',   qty: 2,  days: 40 },
+  { name: 'Potatoes',      category: 'vegetables', icon: 'leaf',   size: '2 kg',      unit: 'kg',   qty: 1,  days: 20 },
+  { name: 'Spinach',       category: 'vegetables', icon: 'leaf',   size: '250 g',     unit: 'g',    qty: 1,  days: 2  },
 
-  { name: 'Apples',        category: 'fruits',     icon: 'apple',  meta: '6 pcs · Qty: 6',  days: 10 },
-  { name: 'Bananas',       category: 'fruits',     icon: 'apple',  meta: '1 dozen · Qty: 12', days: 4 },
+  { name: 'Apples',        category: 'fruits',     icon: 'apple',  size: '6 pcs',     unit: 'pcs',  qty: 6,  days: 10 },
+  { name: 'Bananas',       category: 'fruits',     icon: 'apple',  size: '1 dozen',   unit: 'pcs',  qty: 12, days: 4 },
 
-  { name: 'Basmati Rice',  category: 'grains',     icon: 'rice',   meta: '5 kg · Qty: 1'  },
-  { name: 'Wheat Flour',   category: 'grains',     icon: 'rice',   meta: '5 kg · Qty: 1'  },
-  { name: 'Oats',          category: 'grains',     icon: 'rice',   meta: '500 g · Qty: 1' },
+  { name: 'Basmati Rice',  category: 'grains',     icon: 'rice',   size: '5 kg',      unit: 'kg',   qty: 1  },
+  { name: 'Wheat Flour',   category: 'grains',     icon: 'rice',   size: '5 kg',      unit: 'kg',   qty: 1  },
+  { name: 'Oats',          category: 'grains',     icon: 'rice',   size: '500 g',     unit: 'g',    qty: 1  },
 
-  { name: 'Toor Dal',      category: 'pulses',     icon: 'rice',   meta: '1 kg · Qty: 1'  },
-  { name: 'Chickpeas',     category: 'pulses',     icon: 'rice',   meta: '500 g · Qty: 1' },
-  { name: 'Moong Dal',     category: 'pulses',     icon: 'rice',   meta: '1 kg · Qty: 1'  },
+  { name: 'Toor Dal',      category: 'pulses',     icon: 'rice',   size: '1 kg',      unit: 'kg',   qty: 1  },
+  { name: 'Chickpeas',     category: 'pulses',     icon: 'rice',   size: '500 g',     unit: 'g',    qty: 1  },
+  { name: 'Moong Dal',     category: 'pulses',     icon: 'rice',   size: '1 kg',      unit: 'kg',   qty: 1  },
 
-  { name: 'Amul Milk',     category: 'dairy',      icon: 'bottle', meta: '1 L · Qty: 1',    days: 2  },
-  { name: 'Eggs',          category: 'dairy',      icon: 'egg',    meta: '8 pcs · Qty: 6',  days: 5  },
-  { name: 'Curd',          category: 'dairy',      icon: 'bottle', meta: '400 g · Qty: 1',  days: 3  },
+  { name: 'Amul Milk',     category: 'dairy',      icon: 'bottle', size: '1 L',       unit: 'L',    qty: 1,  days: 2  },
+  { name: 'Eggs',          category: 'dairy',      icon: 'egg',    size: '8 pcs',     unit: 'pcs',  qty: 6,  days: 5  },
+  { name: 'Curd',          category: 'dairy',      icon: 'bottle', size: '400 g',     unit: 'g',    qty: 1,  days: 3  },
 
-  { name: 'Chicken',       category: 'nonveg',     icon: 'fish',   meta: '500 g · Qty: 1',  days: 2  },
-  { name: 'Fish Fillet',   category: 'nonveg',     icon: 'fish',   meta: '400 g · Qty: 1',  days: 1  },
+  { name: 'Chicken',       category: 'nonveg',     icon: 'fish',   size: '500 g',     unit: 'g',    qty: 1,  days: 2  },
+  { name: 'Fish Fillet',   category: 'nonveg',     icon: 'fish',   size: '400 g',     unit: 'g',    qty: 1,  days: 1  },
 
-  { name: 'Bread',         category: 'bakery',     icon: 'bread',  meta: '1 loaf · Qty: 1', days: 4  },
-  { name: 'Burger Buns',   category: 'bakery',     icon: 'bread',  meta: '4 pcs · Qty: 4',  days: 3  },
+  { name: 'Bread',         category: 'bakery',     icon: 'bread',  size: '1 loaf',    unit: 'pack', qty: 1,  days: 4  },
+  { name: 'Burger Buns',   category: 'bakery',     icon: 'bread',  size: '4 pcs',     unit: 'pcs',  qty: 4,  days: 3  },
 
-  { name: 'Maggi',         category: 'snacks',     icon: 'snack',  meta: '4 packets · Qty: 3', days: 15 },
-  { name: 'Potato Chips',  category: 'snacks',     icon: 'snack',  meta: '2 packets · Qty: 2', days: 25 },
-  { name: 'Namkeen',       category: 'snacks',     icon: 'snack',  meta: '1 packet · Qty: 0',  days: 20 },
+  { name: 'Maggi',         category: 'snacks',     icon: 'snack',  size: '4 packets', unit: 'pack', qty: 3,  days: 15 },
+  { name: 'Potato Chips',  category: 'snacks',     icon: 'snack',  size: '2 packets', unit: 'pack', qty: 2,  days: 25 },
+  { name: 'Namkeen',       category: 'snacks',     icon: 'snack',  size: '1 packet',  unit: 'pack', qty: 0,  days: 20 },
 
-  { name: 'Cold Drink',    category: 'beverages',  icon: 'bottle', meta: '2 L · Qty: 1',    days: 60 },
-  { name: 'Orange Juice',  category: 'beverages',  icon: 'bottle', meta: '1 L · Qty: 1',    days: 7  }
+  { name: 'Cold Drink',    category: 'beverages',  icon: 'bottle', size: '2 L',       unit: 'L',    qty: 1,  days: 60 },
+  { name: 'Orange Juice',  category: 'beverages',  icon: 'bottle', size: '1 L',       unit: 'L',    qty: 1,  days: 7  }
 ];
+
+/* ============================================================
+   NAME / UNIT HELPERS
+   These make "Onion" == "Onions" == "onion" (merge into one
+   entry) while keeping "Onion" and "Red Onion" — or "Rice" and
+   "Basmati Rice" — as genuinely separate items.
+   ============================================================ */
+
+// Rounds to 2 decimal places and drops trailing zeros so "1.50"
+// displays as "1.5" and "2.00" displays as "2".
+function formatQty(n) {
+  return (Math.round(n * 100) / 100).toString();
+}
+
+// Strips simple plural endings so "Onions"/"Onion"/"onion" all
+// normalize to the same key, but multi-word names like "Red Onion"
+// or "Basmati Rice" stay distinct from "Onion"/"Rice".
+function normalizeItemName(name) {
+  let n = name.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (n.endsWith('ies')) n = n.slice(0, -3) + 'y';           // batteries -> battery
+  else if (n.endsWith('oes')) n = n.slice(0, -2);            // tomatoes -> tomato, potatoes -> potato
+  else if (/(s|x|ch|sh)es$/.test(n)) n = n.slice(0, -2);     // boxes -> box, dishes -> dish
+  else if (n.endsWith('s') && !n.endsWith('ss')) n = n.slice(0, -1); // onions -> onion, eggs -> egg
+  return n;
+}
+
+const WEIGHT_UNITS = ['kg', 'g'];
+
+function unitsCompatible(a, b) {
+  return a === b || (WEIGHT_UNITS.includes(a) && WEIGHT_UNITS.includes(b));
+}
+
+// Converts a quantity from one unit to another — only weight units
+// (kg <-> g) actually convert; anything else with matching units
+// passes through unchanged.
+function convertQty(qty, fromUnit, toUnit) {
+  if (fromUnit === toUnit) return qty;
+  if (fromUnit === 'kg' && toUnit === 'g') return qty * 1000;
+  if (fromUnit === 'g' && toUnit === 'kg') return qty / 1000;
+  return qty;
+}
+
+// Builds the "size · Qty: N" text shown on every pantry card,
+// always reading the live qty/unit off the item (never stale).
+function formatMeta(item) {
+  return `${item.size} · Qty: ${formatQty(item.qty)}`;
+}
 
 /* ============================================================
    DERIVED DATA HELPERS
@@ -106,12 +156,6 @@ const PANTRY_ITEMS = [
 
 const EXPIRING_SOON_WITHIN_DAYS = 3;
 const LOW_STOCK_QTY_THRESHOLD = 2; // qty at or below this counts as "low stock"
-
-// Pulls the numeric quantity out of a meta string like "500 g · Qty: 4"
-function parseQty(meta) {
-  const match = /Qty:\s*(\d+)/i.exec(meta || '');
-  return match ? parseInt(match[1], 10) : null;
-}
 
 function isNoExpiryItem(item) {
   return PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category) || item.days == null;
@@ -125,10 +169,8 @@ function getExpiringSoonItems() {
 
 function getRestockItems() {
   return PANTRY_ITEMS
-    .map(i => ({ item: i, qty: parseQty(i.meta) }))
-    .filter(x => x.qty != null && x.qty > 0 && x.qty <= LOW_STOCK_QTY_THRESHOLD)
-    .sort((a, b) => a.qty - b.qty)
-    .map(x => x.item);
+    .filter(i => i.qty > 0 && i.qty <= LOW_STOCK_QTY_THRESHOLD)
+    .sort((a, b) => a.qty - b.qty);
 }
 
 // Items that are genuinely out of stock. Since PANTRY_ITEMS only ever
@@ -139,10 +181,7 @@ function getRestockItems() {
 // so this list can never include something the person didn't already
 // have.
 function getUnavailableItems() {
-  return PANTRY_ITEMS
-    .map(i => ({ item: i, qty: parseQty(i.meta) }))
-    .filter(x => x.qty === 0)
-    .map(x => x.item);
+  return PANTRY_ITEMS.filter(i => i.qty === 0);
 }
 
 // A small recipe catalog. A recipe only counts as a "match" and only
@@ -228,7 +267,7 @@ function renderAlertGroups(limitPerGroup) {
     .join('');
 
   const restockCards = (limitPerGroup ? restock.slice(0, limitPerGroup) : restock)
-    .map(item => alertCard(item.name, `${parseQty(item.meta)} in stock`, '#E8C23D'))
+    .map(item => alertCard(item.name, `${formatQty(item.qty)} in stock`, '#E8C23D'))
     .join('');
 
   const unavailableCards = (limitPerGroup ? unavailable.slice(0, limitPerGroup) : unavailable)
@@ -309,12 +348,15 @@ function renderPantryCard(item) {
 
   return `
     <div class="pantry-card">
+      <button class="pantry-delete-btn" type="button" title="Remove ${item.name}" onclick="deleteItem('${item.name.replace(/'/g, "\\'")}', event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
       <div class="pantry-illustration" style="background:var(--${bg});">
         ${badge}
         ${PANTRY_ICONS[item.icon] || ''}
       </div>
       <div class="pantry-name">${item.name}</div>
-      <div class="pantry-meta">${item.meta}</div>
+      <div class="pantry-meta">${formatMeta(item)}</div>
     </div>`;
 }
 
@@ -351,6 +393,109 @@ function renderPantryPage() {
   if (emptyState) emptyState.style.display = totalItems === 0 ? 'flex' : 'none';
 }
 
+/* ============================================================
+   SEARCH
+   One search behavior, driven from either search box (the
+   dashboard topbar or the Pantry page header) — typing in
+   either box keeps the other in sync, jumps to the Pantry page,
+   and filters PANTRY_ITEMS. Recognizes a few special keywords in
+   addition to plain name/category matching:
+     - "expire" / "expiring" / "expired"  -> items expiring soon
+     - "unavailable" / "out of stock"     -> items at 0 qty
+     - "in stock"                         -> items with qty > 0
+   Anything else falls back to a substring match against the
+   item's name or its category label/key.
+   ============================================================ */
+
+function escapeHtmlText(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function matchesSearch(item, rawQuery) {
+  const q = rawQuery.trim().toLowerCase();
+  if (!q) return true;
+
+  if (q.includes('unavailable') || q.includes('out of stock') || q.includes('out-of-stock')) {
+    return item.qty === 0;
+  }
+  if (q.includes('in stock') || q.includes('in-stock') || q === 'instock') {
+    return item.qty > 0;
+  }
+  if (/expir/.test(q)) { // matches "expire", "expiring", "expired"
+    return !isNoExpiryItem(item) && item.days <= EXPIRING_SOON_WITHIN_DAYS;
+  }
+
+  const cat = PANTRY_CATEGORIES.find(c => c.key === item.category);
+  if (cat && cat.label.toLowerCase().includes(q)) return true;
+  if (item.category.toLowerCase().includes(q)) return true;
+  if (item.name.toLowerCase().includes(q)) return true;
+
+  return false;
+}
+
+function renderPantrySearchResults(rawQuery) {
+  const container = document.getElementById('pantryCategories');
+  const emptyState = document.getElementById('pantryEmptyState');
+  if (!container) return;
+  if (emptyState) emptyState.style.display = 'none';
+
+  const matches = PANTRY_ITEMS.filter(i => matchesSearch(i, rawQuery));
+  const label = escapeHtmlText(rawQuery.trim());
+
+  if (matches.length === 0) {
+    container.innerHTML = `
+      <div class="pantry-section-head" style="margin-bottom:16px;">
+        <span class="pantry-section-title">Search results for "${label}"</span>
+        <span class="pantry-section-count">0 items</span>
+      </div>
+      <div class="page-empty" style="display:flex;">
+        <div class="page-empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        <h3>No matches found</h3>
+        <p>Try a different name or category, or a word like "expiring", "in stock" or "unavailable".</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="pantry-section">
+      <div class="pantry-section-head">
+        <span class="pantry-section-title">Search results for "${label}"</span>
+        <span class="pantry-section-count">${matches.length} ${matches.length === 1 ? 'item' : 'items'}</span>
+      </div>
+      <div class="pantry-grid">
+        ${matches.map(renderPantryCard).join('')}
+      </div>
+    </div>`;
+}
+
+// Keeps both search boxes (dashboard topbar + Pantry page header) in
+// sync with whichever one the person is actually typing in.
+function syncSearchInputs(value, sourceId) {
+  ['dashboardSearchInput', 'pantrySearchInput'].forEach(id => {
+    if (id === sourceId) return;
+    const el = document.getElementById(id);
+    if (el && el.value !== value) el.value = value;
+  });
+}
+
+function performSearch(rawValue, sourceId) {
+  syncSearchInputs(rawValue, sourceId);
+
+  const q = rawValue.trim();
+  if (!q) {
+    // Search cleared — go back to the normal grouped Pantry view.
+    renderPantryPage();
+    return;
+  }
+
+  goToPage('pantry', null);
+  renderPantrySearchResults(q);
+}
+
 /* ---------- Horizontal scroll for pantry row ---------- */
 function scrollRow(id, dir) {
   const el = document.getElementById(id);
@@ -385,7 +530,7 @@ function showPage(evt, pageId, navEl) {
 }
 
 /* ---------- Navigate from anywhere on the page ---------- */
-// Buttons like "View All Items", "See All Recipes", "Consumption Log"
+// Buttons like "View All Items", "See All Recipes", "View Shopping List"
 // etc. call this directly with just the target page id.
 function goToPage(pageId, evt) {
   if (evt) evt.preventDefault();
@@ -425,7 +570,7 @@ function handleAddItemSubmit(evt) {
   const expiryInput = document.getElementById('addItemExpiry');
 
   const name = nameInput.value.trim();
-  const qty = parseInt(qtyInput.value, 10);
+  const qty = parseFloat(qtyInput.value); // decimals allowed — e.g. 1.5 L, 5.5 kg
   const unit = unitSelect.value;
   const category = categorySelect.value;
   const expiryValue = expiryInput.value; // '' if left blank (optional)
@@ -447,15 +592,51 @@ function handleAddItemSubmit(evt) {
     if (days < 0) days = 0;
   }
 
-  const newItem = {
-    name,
-    category,
-    icon: iconForCategory(category),
-    meta: `${qty} ${unit} · Qty: ${qty}`,
-    ...(days !== undefined ? { days } : {})
-  };
+  // Look for an existing item that's really "the same product" —
+  // same normalized name (so "Onion"/"Onions"/"onion" all match one
+  // another) and a compatible unit (kg <-> g convert automatically;
+  // anything else must match exactly). "Red Onion" or "Basmati Rice"
+  // normalize to different keys, so those correctly stay separate.
+  const normalizedNew = normalizeItemName(name);
+  const existing = PANTRY_ITEMS.find(i =>
+    normalizeItemName(i.name) === normalizedNew && unitsCompatible(i.unit, unit)
+  );
 
-  PANTRY_ITEMS.push(newItem);
+  if (existing) {
+    // Merge into the existing item instead of creating a duplicate.
+    const convertedQty = convertQty(qty, unit, existing.unit);
+    existing.qty = Math.round((existing.qty + convertedQty) * 100) / 100;
+    existing.size = `${formatQty(existing.qty)} ${existing.unit}`;
+
+    // If this category was a catch-all guess ("Others") but the person
+    // just picked something more specific, adopt it — self-heals a
+    // mis-categorized entry instead of leaving it stuck in Others.
+    if (existing.category === 'others' && category !== 'others') {
+      existing.category = category;
+      existing.icon = iconForCategory(category);
+    }
+
+    // If a fresher expiry was given, use it (soonest wins); otherwise
+    // keep whatever the existing item already had.
+    if (days !== undefined && (existing.days === undefined || days < existing.days)) {
+      existing.days = days;
+    }
+
+    addHistoryEntry(`${existing.name} was updated — now ${formatQty(existing.qty)} ${existing.unit} in stock`);
+  } else {
+    const newItem = {
+      name,
+      category,
+      icon: iconForCategory(category),
+      size: `${formatQty(qty)} ${unit}`,
+      unit,
+      qty,
+      ...(days !== undefined ? { days } : {})
+    };
+    PANTRY_ITEMS.push(newItem);
+
+    addHistoryEntry(`${newItem.name} was added to the pantry`);
+  }
 
   closeAddItemModal();
   renderPantryPage();
@@ -463,6 +644,102 @@ function handleAddItemSubmit(evt) {
   renderRecipes();
   renderAlerts();
   renderStats();
+}
+
+/* ---------- Delete pantry item (with Undo + History log) ---------- */
+
+// In-memory activity log — newest first. Kept simple (no persistence)
+// to match the rest of the app's mock-data approach.
+const HISTORY = [];
+
+function addHistoryEntry(text) {
+  const entry = { id: Date.now() + Math.random(), text, time: new Date() };
+  HISTORY.unshift(entry);
+  renderHistoryPage();
+  return entry;
+}
+
+function renderHistoryPage() {
+  const list = document.getElementById('historyList');
+  const empty = document.getElementById('historyEmptyState');
+  if (!list) return;
+
+  if (HISTORY.length === 0) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'flex';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  list.innerHTML = HISTORY.map(h => `
+    <div class="history-item">
+      <div class="history-item-dot"></div>
+      <div>
+        <p class="history-item-text">${h.text}</p>
+        <p class="history-item-time">${h.time.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</p>
+      </div>
+    </div>`).join('');
+}
+
+// Removes an item from the pantry, logs it to History, and offers a
+// 6-second Undo via the bottom toast. Undoing puts the item back in
+// its original spot and quietly removes the History line too, so a
+// mistaken delete + undo leaves no trace behind.
+function deleteItem(name, evt) {
+  if (evt) evt.stopPropagation();
+
+  const idx = PANTRY_ITEMS.findIndex(i => i.name === name);
+  if (idx === -1) return;
+  const [removed] = PANTRY_ITEMS.splice(idx, 1);
+  const originalIndex = idx;
+
+  renderPantryPage();
+  renderPantryGlance();
+  renderRecipes();
+  renderAlerts();
+  renderStats();
+
+  const historyEntry = addHistoryEntry(`${removed.name} was removed from pantry`);
+
+  showUndoToast(`${removed.name} removed from pantry`, () => {
+    PANTRY_ITEMS.splice(originalIndex, 0, removed);
+
+    const hIdx = HISTORY.findIndex(h => h.id === historyEntry.id);
+    if (hIdx !== -1) HISTORY.splice(hIdx, 1);
+    renderHistoryPage();
+
+    renderPantryPage();
+    renderPantryGlance();
+    renderRecipes();
+    renderAlerts();
+    renderStats();
+  });
+}
+
+let undoToastTimer = null;
+
+function showUndoToast(message, onUndo) {
+  const toast = document.getElementById('undoToast');
+  const msgEl = document.getElementById('undoToastMessage');
+  const undoBtn = document.getElementById('undoToastBtn');
+  if (!toast || !msgEl || !undoBtn) return;
+
+  clearTimeout(undoToastTimer);
+  msgEl.textContent = message;
+  toast.classList.add('show');
+
+  const cleanup = () => {
+    toast.classList.remove('show');
+    undoBtn.onclick = null;
+  };
+
+  undoBtn.onclick = () => {
+    onUndo();
+    cleanup();
+    clearTimeout(undoToastTimer);
+  };
+
+  undoToastTimer = setTimeout(cleanup, 6000);
 }
 
 /* ---------- Notification popover ---------- */
@@ -512,6 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderRecipes();
   renderAlerts();
   renderStats();
+  renderHistoryPage();
 
 
   function setupDropzone(dropzoneId, fileInputId, uploadBtnId, fileListId) {
