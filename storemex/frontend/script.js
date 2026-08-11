@@ -29,6 +29,20 @@ function showPage(evt, pageId, navEl) {
     item.classList.remove('active');
   });
   if (navEl) navEl.classList.add('active');
+  else {
+    // called without an explicit nav element (e.g. from a button
+    // elsewhere on the page) — find the matching sidebar item ourselves
+    const matchingNav = document.querySelector('.nav-item[data-page="' + pageId + '"]');
+    if (matchingNav) matchingNav.classList.add('active');
+  }
+}
+
+/* ---------- Navigate from anywhere on the page ---------- */
+// Buttons like "View All Items", "See All Recipes", "Consumption Log"
+// etc. call this directly with just the target page id.
+function goToPage(pageId, evt) {
+  if (evt) evt.preventDefault();
+  showPage(null, pageId, null);
 }
 
 /* ---------- Upload dropzone (UI only for now) ---------- */
