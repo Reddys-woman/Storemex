@@ -1,549 +1,613 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Storemex is the AI-powered pantry companion that tracks what you have, what’s expiring, and what to buy next.">
+  <script>
+  if (!localStorage.getItem("storemex_token")) {
+    window.location.replace("signup.html");
+  }
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>storemex — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 
-    <title>Storemex — Your smart pantry, always.</title>
-    <link rel="icon" href="favicon.ico">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0M0QjVGRCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdDM0FFRCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIGZpbGw9InVybCgjZykiPjxwYXRoIGQ9Ik0zMCA4Yy0zLjUgMC02LjUgMi04IDVjLTQgLjMtNyAzLjctNyA3LjhjMCAxLjcuNSAzLjIgMS40IDQuNWMtMS43IDEuNi0yLjcgMy44LTIuNyA2LjNjMCAzLjkgMi42IDcuMiA2LjIgOC4yYy40IDMuOCAzLjYgNi43IDcuNSA2LjdoMi42VjE1YzAtMy45LTMuMS03LTctN3oiLz48cGF0aCBkPSJNMzQgOGMzLjUgMCA2LjUgMiA4IDVjNCAuMyA3IDMuNyA3IDcuOGMwIDEuNy0uNSAzLjItMS40IDQuNWMxLjcgMS42IDIuNyAzLjggMi43IDYuM2MwIDMuOS0yLjYgNy4yLTYuMiA4LjJjLS40IDMuOC0zLjYgNi43LTcuNSA2LjdoLTIuNlYxNWMwLTMuOSAzLjEtNyA3LTd6Ii8+PC9nPjxjaXJjbGUgY3g9IjIyIiBjeT0iMTgiIHI9IjEuOCIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iLjUiLz48Y2lyY2xlIGN4PSI0MiIgY3k9IjE4IiByPSIxLjgiIGZpbGw9IiNmZmYiIG9wYWNpdHk9Ii41Ii8+PC9zdmc+">
-
-    <link rel="stylesheet" href="landing.css">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
-
-    <!-- Google Fonts: Sora for display headings, Inter for body (matches the dashboard) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
 </head>
-
 <body>
 
-    <!-- ===========================
-         CURSOR FX (glow + custom cursor, desktop only)
-    ============================ -->
-    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
-    <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
-    <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 3h12l-1 6H7L6 3z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M6.5 9h11l-1.2 10.2a2 2 0 0 1-2 1.8H9.7a2 2 0 0 1-2-1.8L6.5 9z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="brand-text">
+      <h1>storemex</h1>
+      <p>Your smart pantry, always.</p>
+    </div>
+  </div>
 
-    <!-- ===========================
-         MASCOT — Pip, the little Storemex pantry buddy
-    ============================ -->
-    <div class="mascot" id="mascot" aria-hidden="true">
-        <div class="mascot-bubble" id="mascotBubble"></div>
-        <svg id="mascotSvg" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="100" cy="192" rx="34" ry="7" fill="#000" opacity=".12"/>
+  <nav class="nav-group">
+    <a class="nav-item active" href="#" data-page="dashboard" onclick="showPage(event,'dashboard',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="#" data-page="pantry" onclick="showPage(event,'pantry',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16M6 8l1 11a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-11M9 8V5a3 3 0 0 1 6 0v3"/></svg><span>Pantry</span></a>
+    <a class="nav-item" href="#" data-page="scan" onclick="showPage(event,'scan',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg><span>Scan Product</span></a>
+    <a class="nav-item" href="#" data-page="recipes" onclick="showPage(event,'recipes',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3v6a6 6 0 0 0 12 0V3M9 3v6M15 3v6M12 15v6"/></svg><span>Recipes</span></a>
+    <a class="nav-item" href="#" data-page="shopping" onclick="showPage(event,'shopping',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg><span>Shopping List</span></a>
+    <a class="nav-item" href="#" data-page="alerts" onclick="showPage(event,'alerts',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9a2 2 0 0 1 3.4 0l8 13.6A2 2 0 0 1 20 20.5H4a2 2 0 0 1-1.7-3l8-13.6z"/><path d="M12 9.5v4M12 16.5h.01"/></svg><span>Alerts</span></a>
+    <a class="nav-item" href="#" data-page="history" onclick="showPage(event,'history',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>History</span></a>
+  </nav>
 
-            <!-- legs -->
-            <g id="mascotLegL" class="mascot-leg leg-l">
-                <path d="M82 158 Q78 176 76 190" stroke="#4A5C40" stroke-width="13" stroke-linecap="round" fill="none"/>
-                <ellipse cx="75" cy="192" rx="11" ry="7" fill="#4A5C40"/>
-            </g>
-            <g id="mascotLegR" class="mascot-leg leg-r">
-                <path d="M118 158 Q122 176 124 190" stroke="#4A5C40" stroke-width="13" stroke-linecap="round" fill="none"/>
-                <ellipse cx="125" cy="192" rx="11" ry="7" fill="#4A5C40"/>
-            </g>
+  <div class="sidebar-spacer"></div>
 
-            <!-- arms -->
-            <path id="mascotArmL" class="mascot-arm arm-l" d="M62 118 Q30 122 16 100" stroke="#5C7A45" stroke-width="13" stroke-linecap="round" fill="none"/>
-            <circle class="mascot-hand" cx="16" cy="100" r="9" fill="#5C7A45"/>
+  <div class="habit-card">
+    <div class="habit-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9BC97E" stroke-width="2"><path d="M12 22c6-4 9-8.5 9-13A9 9 0 0 0 3 9c0 4.5 3 9 9 13z"/></svg>
+    </div>
+    <p><b>Small habit, big savings.</b><br>Track expiry &amp; save more!</p>
+  </div>
 
-            <path id="mascotArmR" class="mascot-arm arm-r" d="M138 118 Q170 122 184 100" stroke="#5C7A45" stroke-width="13" stroke-linecap="round" fill="none"/>
-            <circle class="mascot-hand" cx="184" cy="100" r="9" fill="#5C7A45"/>
+  <div class="profile-row">
+    <div class="avatar">S</div>
+    <div>
+      <div class="name">Shruti</div>
+      <div class="role">Home Chef</div>
+    </div>
+  </div>
+</aside>
 
-            <!-- brain body -->
-            <g id="mascotBody">
-                <ellipse cx="100" cy="118" rx="72" ry="62" fill="#6B9B4A"/>
-                <!-- brain folds -->
-                <circle cx="55" cy="72" r="22" fill="#6B9B4A"/>
-                <circle cx="80" cy="58" r="24" fill="#6B9B4A"/>
-                <circle cx="110" cy="55" r="25" fill="#6B9B4A"/>
-                <circle cx="140" cy="65" r="23" fill="#6B9B4A"/>
-                <circle cx="158" cy="90" r="20" fill="#6B9B4A"/>
+<!-- ================= MAIN ================= -->
+<main class="main">
 
-                <!-- groove -->
-                <path d="M100 60 Q88 90 100 118 Q112 146 100 172" stroke="#4A5C40" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55"/>
-                <path d="M65 80 Q75 95 65 112" stroke="#4A5C40" stroke-width="4" fill="none" stroke-linecap="round" opacity=".35"/>
-                <path d="M135 80 Q125 95 135 112" stroke="#4A5C40" stroke-width="4" fill="none" stroke-linecap="round" opacity=".35"/>
+<!-- ================= DASHBOARD PAGE ================= -->
+<div id="page-dashboard" class="page active">
 
-                <!-- cheeks -->
-                <ellipse cx="62" cy="132" rx="11" ry="6.5" fill="#F3D9A6" opacity=".65"/>
-                <ellipse cx="138" cy="132" rx="11" ry="6.5" fill="#F3D9A6" opacity=".65"/>
-
-                <!-- eyes -->
-                <g id="mascotEyes">
-                    <ellipse cx="78" cy="112" rx="13" ry="15" fill="#fff"/>
-                    <ellipse cx="122" cy="112" rx="13" ry="15" fill="#fff"/>
-                    <circle cx="81" cy="116" r="6" fill="#2B2A1F"/>
-                    <circle cx="125" cy="116" r="6" fill="#2B2A1F"/>
-                    <circle cx="83.5" cy="112.5" r="2" fill="#fff"/>
-                    <circle cx="127.5" cy="112.5" r="2" fill="#fff"/>
-                </g>
-
-                <!-- smile -->
-                <path d="M88 142 Q100 152 112 142" stroke="#2B2A1F" stroke-width="4" fill="none" stroke-linecap="round"/>
-            </g>
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="greeting">
+      <h2>Welcome, user! 👋</h2>
+      <p>Let's keep your pantry smart &amp; stress-free.</p>
+    </div>
+    <div class="topbar-right">
+      <button type="button" class="cb-toggle" id="colorBlindToggle" onclick="toggleColorBlindMode()" title="Colour-blind mode" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v18M3 12h18"/>
+          <path d="M5.5 5.5c4 6 9 9 13 13" opacity=".55"/>
         </svg>
+        <span class="cb-toggle-label">CB</span>
+      </button>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="dashboardSearchInput" placeholder="Search by name, category, 'expiring', 'unavailable'..." oninput="performSearch(this.value, 'dashboardSearchInput')">
+      </div>
+      <div class="notif-wrap">
+        <button class="icon-btn" id="notifBellBtn" onclick="toggleNotifPanel(event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9a2 2 0 0 1 3.4 0l8 13.6A2 2 0 0 1 20 20.5H4a2 2 0 0 1-1.7-3l8-13.6z"/><path d="M12 9.5v4M12 16.5h.01"/></svg>
+          <span class="badge" id="notifBadge">0</span>
+        </button>
+
+        <!-- Notification summary popover -->
+        <div class="notif-panel" id="notifPanel" style="display:none;">
+          <div class="notif-panel-head">
+            <h4>Notifications</h4>
+          </div>
+          <div class="notif-panel-row">
+            <span class="notif-dot" style="background:#E8694E;"></span>
+            <span class="notif-row-label">Expiring Soon</span>
+            <span class="notif-row-count" id="notifCountExpiring">0</span>
+          </div>
+          <div class="notif-panel-row">
+            <span class="notif-dot" style="background:#E8C23D;"></span>
+            <span class="notif-row-label">Need Restock</span>
+            <span class="notif-row-count" id="notifCountRestock">0</span>
+          </div>
+          <div class="notif-panel-row">
+            <span class="notif-dot" style="background:#9B968A;"></span>
+            <span class="notif-row-label">Unavailable</span>
+            <span class="notif-row-count" id="notifCountUnavailable">0</span>
+          </div>
+          <div class="notif-panel-empty" id="notifPanelEmpty" style="display:none;">You're all caught up — nothing needs attention.</div>
+          <button class="notif-panel-btn" onclick="goToPage('alerts', event); toggleNotifPanel(event, false);">View All Alerts</button>
+        </div>
+      </div>
+      <div class="topbar-avatar">S</div>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--green-soft);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><path d="M6 3v6a6 6 0 0 0 12 0V3"/><path d="M9 3v6M15 3v6M12 15v6"/></svg>
+      </div>
+      <div><div class="stat-value" id="statTotalItems">0</div><div class="stat-label">Total Items</div><div class="stat-sub">In your pantry</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--orange-soft);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D98A3D" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+      </div>
+      <div><div class="stat-value" id="statExpiringSoon">0</div><div class="stat-label">Expiring Soon</div><div class="stat-sub">Within 5 days</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--yellow-soft);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D9A63D" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
+      </div>
+      <div><div class="stat-value" id="statLowStock">0</div><div class="stat-label">Low Stock</div><div class="stat-sub">Need restock</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--purple-soft);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8A6FB0" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5c0 2 1 3 2 4H15c1-1 2-2 2-4a5 5 0 0 0-5-5z"/><path d="M9 15h6M10 18h4"/></svg>
+      </div>
+      <div><div class="stat-value" id="statRecipeIdeas">0</div><div class="stat-label">Recipe Ideas</div><div class="stat-sub">For you today</div></div>
+    </div>
+  </div>
+
+  <!-- Content grid -->
+  <div class="content-grid">
+    <div class="col-left">
+
+      <!-- Pantry at a glance -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Pantry at a Glance <span class="spark">✦</span></h3>
+          <a class="view-all" href="#" onclick="goToPage('pantry', event)">View All Items <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg></a>
+        </div>
+        <div class="scroll-row-wrap">
+          <button class="scroll-arrow left" onclick="scrollRow('pantryScroll',-1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#6F6C5C" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="scroll-row" id="pantryScroll">
+            <!-- Populated by renderPantryGlance() in script.js from PANTRY_ITEMS -->
+          </div>
+          <button class="scroll-arrow right" onclick="scrollRow('pantryScroll',1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#6F6C5C" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Recipe Recommendations -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>AI Recipe Recommendations <span class="spark">✦</span></h3>
+          <a class="view-all" href="#" onclick="goToPage('recipes', event)">See All Recipes <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg></a>
+        </div>
+        <div class="recipe-row" id="recipeRow">
+          <!-- Populated by renderRecipes() in script.js — only recipes whose
+               ingredients are actually in PANTRY_ITEMS are shown. -->
+        </div>
+        <div class="dots" id="recipeDots"></div>
+      </div>
+
     </div>
 
-    <!-- ===========================
-         NAV
-    ============================ -->
-    <header class="nav" id="nav">
-        <div class="nav-inner">
-            <a href="index.html" class="brand">
-                <i class="fa-solid fa-basket-shopping"></i>
-                <span>Storemex</span>
-            </a>
+    <!-- RIGHT COLUMN -->
+    <div class="col-right">
 
-            <nav class="nav-links" id="navLinks">
-                <a href="#features">Features</a>
-                <a href="#how-it-works">How it Works</a>
-                <a href="#about">About</a>
-                <a href="#team">Team</a>
-                <a href="#contact">Contact</a>
-            </nav>
-
-            <div class="nav-actions">
-                <button id="themeToggle" class="icon-btn" type="button" title="Toggle dark mode">
-                    <i class="fa-regular fa-moon"></i>
-                </button>
-                <a href="app/index.html" class="btn btn-ghost">Log In</a>
-                <a href="app/index.html" class="btn btn-primary magnetic">Sign Up Free</a>
-                <button class="nav-burger" id="navBurger" type="button" aria-label="Open menu">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <main>
-        <!-- ===========================
-             HERO
-        ============================ -->
-        <section class="hero-section" id="top">
-            <canvas id="heroCanvas" aria-hidden="true"></canvas>
-            <div class="hero-blob blob-a" aria-hidden="true"></div>
-            <div class="hero-blob blob-b" aria-hidden="true"></div>
-
-            <div class="hero-inner">
-                <div class="hero-copy reveal">
-                    <span class="eyebrow"><i class="fa-solid fa-sparkles"></i> AI-powered smart pantry</span>
-                    <h1 class="split-text">
-                        <span class="line">Know what's in stock.</span>
-                        <span class="line grad-text">Never waste again.</span>
-                    </h1>
-                    <p class="hero-quote">Say goodbye to expired groceries — say hello to Storemex.</p>
-                    <p class="hero-sub">
-                        Track expiry dates, low stock, and shopping lists in one calm place.
-                        Storemex watches your pantry so you waste less, shop smarter, and always know
-                        what’s left before you cook.
-                    </p>
-                    <div class="hero-ctas">
-                        <a href="app/index.html" class="btn btn-primary btn-lg magnetic">
-                            <span>Get Started Free</span> <i class="fa-solid fa-arrow-right"></i>
-                        </a>
-                        <a href="#about" class="btn btn-outline btn-lg magnetic">
-                            <i class="fa-solid fa-circle-play"></i> Take the tour
-                        </a>
-                    </div>
-                    <div class="hero-tags">
-                        <span><i class="fa-solid fa-check"></i> No credit card</span>
-                        <span><i class="fa-solid fa-check"></i> Free to start</span>
-                        <span><i class="fa-solid fa-check"></i> Your data, deletable anytime</span>
-                    </div>
-
-                    <div class="hero-stats reveal">
-                        <div class="stat">
-                            <span class="stat-num" data-count="4">0</span><span class="stat-suffix">+</span>
-                            <span class="stat-label">Smart alerts</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-num" data-count="100">0</span><span class="stat-suffix">%</span>
-                            <span class="stat-label">Less food waste</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-num" data-count="0">0</span><span class="stat-suffix">sec</span>
-                            <span class="stat-label">Folders you build</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SIGNATURE VISUAL: scattered captures settle into organized collections -->
-                <div class="hero-visual reveal tilt" aria-hidden="true">
-                    <div class="scatter-field" id="scatterField">
-                        <div class="chip chip-1"><i class="fa-regular fa-image"></i></div>
-                        <div class="chip chip-2"><i class="fa-solid fa-microphone"></i></div>
-                        <div class="chip chip-3"><i class="fa-regular fa-file-receipt"></i></div>
-                        <div class="chip chip-4"><i class="fa-regular fa-image"></i></div>
-                        <div class="chip chip-5"><i class="fa-solid fa-note-sticky"></i></div>
-                        <div class="chip chip-6"><i class="fa-regular fa-file"></i></div>
-                    </div>
-                    <div class="collections-preview">
-                        <div class="mini-collection">
-                            <div class="mini-head"><i class="fa-solid fa-graduation-cap"></i> Study</div>
-                            <div class="mini-row"></div>
-                            <div class="mini-row short"></div>
-                        </div>
-                        <div class="mini-collection">
-                            <div class="mini-head"><i class="fa-solid fa-cart-shopping"></i> Shopping</div>
-                            <div class="mini-row"></div>
-                            <div class="mini-row short"></div>
-                        </div>
-                        <div class="mini-collection">
-                            <div class="mini-head"><i class="fa-solid fa-plane"></i> Travel</div>
-                            <div class="mini-row"></div>
-                            <div class="mini-row short"></div>
-                        </div>
-                        <div class="mini-collection">
-                            <div class="mini-head"><i class="fa-solid fa-code"></i> Work</div>
-                            <div class="mini-row"></div>
-                            <div class="mini-row short"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <a href="#about" class="scroll-cue" aria-label="Scroll to learn more">
-                <span>Scroll</span>
-                <i class="fa-solid fa-chevron-down"></i>
-            </a>
-        </section>
-
-        <!-- ===========================
-             USE-CASE STRIP
-        ============================ -->
-        <section class="strip reveal">
-            <p class="strip-label">Built for whatever you throw at it</p>
-            <div class="strip-icons">
-                <span><i class="fa-regular fa-image"></i> Screenshots</span>
-                <span><i class="fa-solid fa-microphone"></i> Voice Notes</span>
-                <span><i class="fa-regular fa-file-receipt"></i> receipts</span>
-                <span><i class="fa-solid fa-receipt"></i> Receipts</span>
-                <span><i class="fa-solid fa-graduation-cap"></i> Study Notes</span>
-                <span><i class="fa-solid fa-lightbulb"></i> Random Ideas</span>
-            </div>
-        </section>
-
-        <!-- ===========================
-             CHAPTER 01 — ABOUT (+ TEAM)
-        ============================ -->
-        <section class="chapter" id="about">
-            <span class="chapter-watermark" aria-hidden="true">01</span>
-            <div class="section-inner">
-
-                <div class="chapter-head reveal">
-                    <span class="chapter-tag">Chapter 01</span>
-                    <h2 class="chapter-title">About <span class="grad-text">Storemex</span></h2>
-                    <p class="chapter-sub">The story, the mission, and the humans behind it.</p>
-                </div>
-
-                <div class="about-grid">
-                    <div class="reveal">
-                        <span class="eyebrow"><i class="fa-solid fa-circle-info"></i> Why we built this</span>
-                        <p class="about-copy">
-                            We take a pantry item, save a expiry date, or download a receipt a dozen times a day —
-                            and watch groceries expire before you use them. Storemex exists because organizing
-                            that mess shouldn't be another chore on your list. It should just happen, quietly,
-                            in the background, so the only thing left for you to do is remember that you
-                            saved something — Storemex handles the rest.
-                        </p>
-                        <p class="about-copy">
-                            We're a small team obsessed with making "where did I save that?" a question you
-                            never have to ask again.
-                        </p>
-                    </div>
-
-                    <div class="team-card reveal tilt">
-                        <div class="team-badge"><i class="fa-solid fa-code"></i></div>
-                        <h3>Built by the Storemex team</h3>
-                        <p>Storemex is designed and developed by <strong>the Storemex team</strong>, a small team
-                            building focused, AI-native tools for everyday information overload.</p>
-                        <a href="#contact" class="btn btn-outline btn-sm magnetic">Get in touch <i class="fa-solid fa-arrow-right"></i></a>
-                    </div>
-                </div>
-
-                <!-- TEAM SUBSECTION -->
-                <div id="team" class="team-anchor">
-                    <div class="chapter-head sub reveal">
-                        <span class="eyebrow center"><i class="fa-solid fa-users"></i> The Team</span>
-                        <h3 class="section-title">Meet the Storemex team</h3>
-                    </div>
-
-                    <div class="team-grid">
-                        <div class="member-card reveal tilt">
-                            <div class="member-avatar avatar-a">
-                                <svg viewBox="0 0 100 100" aria-hidden="true">
-                                    <circle cx="50" cy="38" r="20"/>
-                                    <path d="M14 92c0-22 16-34 36-34s36 12 36 34" />
-                                    <path d="M32 26c4-10 32-10 36 2 2 6-2 9-2 9s2-13-8-15c-8-2-14 4-20 4-4 0-6-2-6 0Z" class="hair"/>
-                                </svg>
-                            </div>
-                            <h3>Shruti Sharma</h3>
-                            <span class="member-role">Founder &amp; Lead Frontend Developer</span>
-                            <p class="member-loc"><i class="fa-solid fa-location-dot"></i> Delhi, India</p>
-                            <p class="member-bio">Pre-first-year student planning to join IGNOU for BCA. Passionate
-                                about coding and development — currently building the frontend, wiring it up to the
-                                backend, and keeping the whole app responsive and running smoothly.</p>
-                            <div class="member-socials">
-                                <a href="https://github.com/Reddys-woman/" target="_blank" rel="noopener" aria-label="Shruti's GitHub"><i class="fa-brands fa-github"></i></a>
-                                <a href="https://www.linkedin.com/in/shruti-sharma-8889132a3/" target="_blank" rel="noopener" aria-label="Shruti's LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
-                            </div>
-                        </div>
-
-                        <div class="member-card reveal tilt">
-                            <div class="member-avatar avatar-b">
-                                <svg viewBox="0 0 100 100" aria-hidden="true">
-                                    <circle cx="50" cy="38" r="20"/>
-                                    <path d="M14 92c0-22 16-34 36-34s36 12 36 34" />
-                                    <path d="M28 32c2-14 40-14 42 0 1 6-3 8-3 8s1-10-6-13c-9-4-11 6-24 6-6 0-9-3-9-1Z" class="hair"/>
-                                </svg>
-                            </div>
-                            <h3>Yamini Gupta</h3>
-                            <span class="member-role">Founder &amp; Lead Backend Developer</span>
-                            <p class="member-loc"><i class="fa-solid fa-location-dot"></i> Karnataka, India</p>
-                            <p class="member-bio">Pre-first-year student working as the team's backend developer.
-                                Enjoys building the logic that powers applications and solving technical problems.</p>
-                            <div class="member-socials">
-                                <a href="https://github.com/NeuralWhirl" target="_blank" rel="noopener" aria-label="Yamini's GitHub"><i class="fa-brands fa-github"></i></a>
-                                <a href="https://www.linkedin.com/in/yamini-gupta-6a9077373/" target="_blank" rel="noopener" aria-label="Yamini's LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
-                            </div>
-                        </div>
-
-                        <div class="member-card reveal tilt">
-                            <div class="member-avatar avatar-c">
-                                <svg viewBox="0 0 100 100" aria-hidden="true">
-                                    <circle cx="50" cy="38" r="20"/>
-                                    <path d="M14 92c0-22 16-34 36-34s36 12 36 34" />
-                                    <path d="M30 24c6-8 34-8 38 4 2 6-1 12-1 12s-2-11-10-13c-8-2-10 5-18 5-5 0-11-4-9-8Z" class="hair"/>
-                                </svg>
-                            </div>
-                            <h3>Prakamya Pandey</h3>
-                            <span class="member-role">Social Media Manager</span>
-                            <p class="member-loc"><i class="fa-solid fa-location-dot"></i> India</p>
-                            <p class="member-bio">Pre-first-year student managing social media and presentations for
-                                the team. Loves graphics and editing, is always ready to learn something new, and is
-                                an aspiring software engineer who loves to create and develop.</p>
-                            <div class="member-socials">
-                                <a href="https://github.com/prakamyapandey7178-hash" target="_blank" rel="noopener" aria-label="Prakamya's GitHub"><i class="fa-brands fa-github"></i></a>
-                                <a href="https://www.linkedin.com/in/prakamya-pandey-a7148a412" target="_blank" rel="noopener" aria-label="Prakamya's LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===========================
-             CHAPTER 02 — OUR PRODUCT
-        ============================ -->
-        <section class="chapter alt" id="features">
-            <span class="chapter-watermark" aria-hidden="true">02</span>
-            <div class="section-inner">
-
-                <div class="chapter-head reveal">
-                    <span class="chapter-tag">Chapter 02</span>
-                    <h2 class="chapter-title">Our <span class="grad-text">Product</span></h2>
-                    <p class="chapter-sub">Restock happens smarter. You just cook.</p>
-                </div>
-
-                <div class="feature-grid">
-                    <div class="feature-card reveal tilt">
-                        <div class="feature-icon icon-violet"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <h3>Smart Search</h3>
-                        <p>Find anything in your pantry instantly — by name, category, or status like
-                            “expiring,” “low stock,” or “unavailable.” No digging through lists.</p>
-                    </div>
-
-                    <div class="feature-card reveal tilt">
-                        <div class="feature-icon icon-amber"><i class="fa-solid fa-bell"></i></div>
-                        <h3>Restock &amp; Expiry Reminders</h3>
-                        <p>Get alerts when items are running low or nearing expiry — so you restock in time
-                            and waste less food without checking the fridge every day.</p>
-                    </div>
-
-                    <div class="feature-card reveal tilt">
-                        <div class="feature-icon icon-violet"><i class="fa-solid fa-microphone"></i></div>
-                        <h3>Alexa Integration</h3>
-                        <p>Ask Alexa what’s left, what’s expiring, or what to add to the shopping list —
-                            hands-free pantry updates while you cook.</p>
-                    </div>
-
-                    <div class="feature-card reveal tilt">
-                        <div class="feature-icon icon-amber"><i class="fa-solid fa-hand-pointer"></i></div>
-                        <h3>Webcam Gestures</h3>
-                        <p>Swipe through your shopping list with simple hand gestures on camera —
-                            add to cart or save for later without touching the keyboard.</p>
-                    </div>
-
-                    <div class="feature-card reveal tilt">
-                        <div class="feature-icon icon-violet"><i class="fa-solid fa-camera"></i></div>
-                        <h3>Expiry from Images</h3>
-                        <p>Snap a product label or receipt and Storemex extracts the expiry date for you —
-                            no manual typing, just point and save.</p>
-                    </div>
-
-                    <div class="feature-card reveal tilt">
-                        <div class="feature-icon icon-amber"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                        <h3>History &amp; Logs</h3>
-                        <p>Every add, update, and removal is logged in a clear timeline — so you always
-                            know what changed in your pantry and when.</p>
-                    </div>
-                </div>
-
-                <div class="feature-links-row reveal">
-                    <a class="btn btn-outline" href="https://github.com/Reddys-woman/Storemex" target="_blank" rel="noopener">
-                        <i class="fa-solid fa-code"></i> Checkout on GitHub <span class="code-tag">&lt;/&gt;</span>
-                    </a>
-                    <a class="feature-social-link" href="https://www.instagram.com/_.codecatalyst._/" target="_blank" rel="noopener">
-                        <i class="fa-brands fa-instagram"></i> Checkout our Social page
-                    </a>
-                </div>
-
-                <!-- COMPARISON -->
-                <div class="chapter-head sub reveal">
-                    <span class="eyebrow center"><i class="fa-solid fa-scale-balanced"></i> Comparison</span>
-                    <h3 class="section-title">Storemex vs. A messy fridge</h3>
-                </div>
-
-                </section>
-
-        <!-- ===========================
-             CTA BANNER
-        ============================ -->
-        <section class="cta-banner reveal">
-            <div class="cta-inner">
-                <h2>Ready to stop losing track of things?</h2>
-                <p>Start capturing for free — no credit card, no setup, no folders to name.</p>
-                <a href="app/index.html" class="btn btn-light btn-lg magnetic">
-                    Create your free account <i class="fa-solid fa-arrow-right"></i>
-                </a>
-            </div>
-        </section>
-
-        <!-- ===========================
-             CHAPTER 03 — CONTACT US
-        ============================ -->
-        <section class="chapter" id="contact">
-            <span class="chapter-watermark" aria-hidden="true">03</span>
-            <div class="section-inner">
-
-                <div class="chapter-head reveal">
-                    <span class="chapter-tag">Chapter 03</span>
-                    <h2 class="chapter-title">Contact <span class="grad-text">Us</span></h2>
-                    <p class="chapter-sub">Questions, feedback, or a bug you want to flag? We read everything.</p>
-                </div>
-
-                <div class="contact-grid">
-                    <div class="reveal">
-                        <div class="contact-info">
-                            <div class="contact-row">
-                                <i class="fa-solid fa-envelope"></i>
-                                <div>
-                                    <strong>Email</strong>
-                                    <p>support@storemex.app</p>
-                                </div>
-                            </div>
-                            <div class="contact-row">
-                                <i class="fa-solid fa-location-dot"></i>
-                                <div>
-                                    <strong>Headquarters</strong>
-                                    <p>India</p>
-                                </div>
-                            </div>
-                            <div class="contact-row">
-                                <i class="fa-solid fa-clock"></i>
-                                <div>
-                                    <strong>Response time</strong>
-                                    <p>Usually within 3–4 working days</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="social-row">
-                            <a href="https://www.instagram.com/.codecatalyst./" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                            <a href="https://discord.gg/9MyDmCs7Mv" target="_blank" rel="noopener" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
-                            <a href="https://github.com/Reddys-woman/" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
-                        </div>
-                    </div>
-
-                    <form class="contact-form reveal tilt" id="contactForm">
-                        <label>
-                            Name
-                            <input type="text" name="name" placeholder="Your name" required>
-                        </label>
-                        <label>
-                            Email
-                            <input type="email" name="email" placeholder="you@example.com" required>
-                        </label>
-                        <label>
-                            Message
-                            <textarea name="message" rows="4" placeholder="How can we help?" required></textarea>
-                        </label>
-                        <button type="submit" class="btn btn-primary btn-lg full magnetic">
-                            <span>Send Message</span> <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                        <p class="form-note" id="formNote"></p>
-                    </form>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- ===========================
-         FOOTER
-    ============================ -->
-    <footer class="site-footer">
-        <div class="footer-inner">
-            <div class="footer-brand">
-                <a href="index.html" class="brand">
-                    <i class="fa-solid fa-basket-shopping"></i>
-                    <span>Storemex</span>
-                </a>
-                <p>Your smart pantry, always.</p>
-                <div class="social-row">
-                    <a href="https://www.instagram.com/.codecatalyst./" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://discord.gg/9MyDmCs7Mv" target="_blank" rel="noopener" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
-                    <a href="https://github.com/Reddys-woman/" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
-                </div>
-            </div>
-
-            <div class="footer-col">
-                <h4>Product</h4>
-                <a href="#features">Features</a>
-                <a href="#how-it-works">How it Works</a>
-                <a href="app/index.html">Dashboard</a>
-            </div>
-
-            <div class="footer-col">
-                <h4>Company</h4>
-                <a href="#about">About</a>
-                <a href="#team">Team</a>
-                <a href="#contact">Contact</a>
-            </div>
-
-            <div class="footer-col">
-                <h4>Legal</h4>
-                <a href="#">Terms &amp; Conditions</a>
-                <a href="#">Privacy Policy</a>
-            </div>
+      <!-- Smart Alerts -->
+      <div class="alerts-panel">
+        <div class="panel-head">
+          <h3>Smart Alerts</h3>
+          <a class="view-all" href="#" onclick="goToPage('alerts', event)">View All</a>
         </div>
 
-        <div class="footer-bottom">
-            <p>&copy; <span id="year"></span> the Storemex team. All rights reserved.</p>
+        <div id="alertsList">
+          <!-- Populated by renderAlerts() in script.js from PANTRY_ITEMS -->
         </div>
-    </footer>
+      </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="landing.js"></script>
-    <script src="landing-fx.js"></script>
-    
+      <!-- Quick Actions -->
+      <div class="panel">
+        <div class="panel-head" style="margin-bottom:12px;">
+          <h3>Quick Actions</h3>
+        </div>
+        <div class="quick-grid">
+          <div class="quick-item" onclick="goToPage('scan', event)">
+            <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg></div>
+            <div class="qtitle">Scan Product</div>
+            <div class="qsub">Use camera to scan</div>
+          </div>
+          <div class="quick-item" onclick="openAddItemModal(event)">
+            <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></div>
+            <div class="qtitle">Add Manually</div>
+            <div class="qsub">Add item manually</div>
+          </div>
+          <div class="quick-item" onclick="goToPage('shopping', event)">
+            <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg></div>
+            <div class="qtitle">View Shopping List</div>
+            <div class="qsub">See items to buy</div>
+          </div>
+          <div class="quick-item" onclick="window.StoremexVoice && StoremexVoice.toggle()">
+            <div class="qicon"><svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="2"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></div>
+            <div class="qtitle">Voice Control</div>
+            <div class="qsub">Say “mex, update…”</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<!-- ============= END DASHBOARD PAGE ============= -->
+
+<!-- ================= PANTRY PAGE ================= -->
+<div id="page-pantry" class="page">
+  <div class="page-header">
+    <div>
+      <h2>Pantry</h2>
+      <p>Every item you have on hand, grouped by category.</p>
+    </div>
+    <div class="pantry-header-actions">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="pantrySearchInput" placeholder="Search by name, category, 'expiring', 'unavailable'..." oninput="performSearch(this.value, 'pantrySearchInput')">
+      </div>
+      <button class="upload-btn" onclick="openAddItemModal(event)" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add Item
+      </button>
+    </div>
+  </div>
+
+  <!-- Category sections are injected here by script.js — a category
+       only appears when at least one item in stock belongs to it. -->
+  <div id="pantryCategories" class="pantry-categories"></div>
+
+  <!-- Shown only if there are zero items in the whole pantry -->
+  <div class="page-empty" id="pantryEmptyState" style="display:none;">
+    <div class="page-empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><path d="M4 8h16M6 8l1 11a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-11M9 8V5a3 3 0 0 1 6 0v3"/></svg>
+    </div>
+    <h3>Your pantry is empty</h3>
+    <p>Scan or add items and they'll show up here, grouped by category.</p>
+  </div>
+</div>
+
+<!-- ================= SCAN PRODUCT PAGE ================= -->
+<div id="page-scan" class="page">
+  <div class="page-header">
+    <div>
+      <h2>Scan Product</h2>
+      <p>Use camera or upload a package photo to add items to your pantry instantly.</p>
+    </div>
+  </div>
+
+  <div class="panel upload-panel" style="max-width:700px; margin-top:20px;">
+    <div class="panel-head">
+      <h3>AI Package & Barcode Scanner <span class="spark">✦</span></h3>
+    </div>
+
+    <!-- Upload / drag-drop -->
+    <div class="upload-dropzone" id="scanDropzone">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg>
+      </div>
+      <p class="upload-title">Click to upload photo, or drag &amp; drop</p>
+      <p class="upload-sub">JPG, PNG or WebP — package photo or barcode</p>
+      <div class="scan-btn-row">
+        <button class="upload-btn" id="scanUploadBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          Select Image
+        </button>
+        <button class="upload-btn scan-btn-camera" id="scanOpenCameraBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg>
+          Use Camera
+        </button>
+      </div>
+      <input type="file" id="scanFileInput" accept="image/*" hidden>
+    </div>
+
+    <!-- Live camera preview (hidden until "Use Camera" is clicked) -->
+    <div class="scan-camera-box" id="scanCameraBox" style="display:none;">
+      <video id="scanVideo" autoplay playsinline muted></video>
+      <canvas id="scanCanvas" hidden></canvas>
+      <div class="scan-camera-actions">
+        <button class="upload-btn" id="scanCaptureBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+          Capture Photo
+        </button>
+        <button class="modal-btn-secondary" id="scanCloseCameraBtn" type="button">Cancel</button>
+      </div>
+      <p class="scan-camera-status" id="scanCameraStatus"></p>
+    </div>
+
+    <div class="upload-file-list" id="scanFileList"></div>
+
+    <!-- Scan progress / result -->
+    <div class="scan-result-area" id="scanResultArea"></div>
+  </div>
+</div>
+
+<!-- ================= RECIPES PAGE ================= -->
+<div id="page-recipes" class="page">
+  <div class="page-header">
+    <div>
+      <h2>Recipes</h2>
+      <p>Simple, realistic recipes the AI builds from exactly what's in your pantry right now.</p>
+    </div>
+    <button type="button" class="modal-btn-secondary recipes-refresh-btn" onclick="fetchAiRecipes()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M3 21v-5h5"/></svg>
+      Refresh Ideas
+    </button>
+  </div>
+
+  <div class="recipes-page-loading" id="recipesPageLoading" style="display:none;">
+    <div class="scan-spinner"></div>
+    <span>Cooking up ideas from your pantry…</span>
+  </div>
+
+  <div class="scan-error" id="recipesPageError" style="display:none;">
+    <span></span>
+  </div>
+
+  <div class="recipes-page-grid" id="recipesPageGrid"></div>
+
+  <div class="page-empty" id="recipesPageEmpty" style="display:none;">
+    <div class="page-empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><path d="M6 3v6a6 6 0 0 0 12 0V3M9 3v6M15 3v6M12 15v6"/></svg>
+    </div>
+    <h3>No recipe ideas yet</h3>
+    <p>Add a few items to your pantry — even just one or two — and the AI will suggest simple, realistic recipes you can actually make with them.</p>
+  </div>
+</div>
+
+<!-- ================= SHOPPING LIST PAGE ================= -->
+<div id="page-shopping" class="page">
+  <div class="page-header shopping-header">
+    <div>
+      <h2>Shopping List</h2>
+      <p>Swipe right to add to your list, left for “buy later”. Drag the card or use the buttons.</p>
+    </div>
+    <div class="shopping-header-art" aria-hidden="true">
+      <!-- Decorative shopping bag + produce -->
+      <svg width="120" height="72" viewBox="0 0 120 72" fill="none">
+        <path d="M38 22h44l-4 38a8 8 0 0 1-8 7H50a8 8 0 0 1-8-7l-4-38z" fill="#E7EEDD" stroke="#5C7A45" stroke-width="1.6"/>
+        <path d="M48 22c0-8 6-14 12-14s12 6 12 14" stroke="#5C7A45" stroke-width="1.6" fill="none"/>
+        <circle cx="22" cy="48" r="10" fill="#F8E1D8" stroke="#C24A32" stroke-width="1.4"/>
+        <path d="M22 38c-1 3 0 5 2 6" stroke="#8C6A34" stroke-width="1.4" stroke-linecap="round"/>
+        <ellipse cx="98" cy="46" rx="11" ry="13" fill="#FBF1D8" stroke="#D9A63D" stroke-width="1.4"/>
+        <path d="M72 18c6-2 12 1 14 6" stroke="#9BC97E" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="86" cy="22" r="5" fill="#9BC97E" opacity="0.7"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="shopping-layout" id="shoppingLayout">
+    <!-- Decorative left side -->
+    <div class="shopping-deco shopping-deco-left" aria-hidden="true">
+      <div class="deco-blob deco-blob-1"></div>
+      <div class="deco-icon-float" style="--delay:0s; top:8%; left:12%;">
+        <svg width="48" height="48" viewBox="0 0 64 64" fill="none"><path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="deco-icon-float" style="--delay:1.2s; top:42%; left:4%;">
+        <svg width="42" height="42" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="36" r="18" fill="#E8694E" stroke="#C24A32" stroke-width="1.8"/><path d="M30 18c0-4 1-6 3-8" stroke="#8C6A34" stroke-width="2" stroke-linecap="round"/><path d="M33 12c3-2 6-2 8 0-2 3-6 3-8 0z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.4"/></svg>
+      </div>
+      <div class="deco-icon-float" style="--delay:2.4s; top:72%; left:18%;">
+        <svg width="40" height="36" viewBox="0 0 70 52" fill="none"><ellipse cx="16" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/><ellipse cx="35" cy="22" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/><ellipse cx="54" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/></svg>
+      </div>
+    </div>
+
+    <!-- Card stack (center) -->
+    <div class="swipe-deck-wrap">
+      <div class="swipe-progress" id="swipeProgress">0 / 0 reviewed</div>
+      <div class="swipe-zone-hint left">← Buy Later</div>
+      <div class="swipe-zone-hint right">Shopping List →</div>
+      <div class="swipe-deck" id="swipeDeck"><!-- Populated by renderSwipeDeck() in script.js --></div>
+      <div class="swipe-actions">
+        <button type="button" class="swipe-action-btn skip" onclick="decideCurrentCard('left')">✕ Buy Later</button>
+        <button type="button" class="swipe-action-btn buy" onclick="decideCurrentCard('right')">✓ Add to List</button>
+      </div>
+    </div>
+
+    <!-- Decorative right side -->
+    <div class="shopping-deco shopping-deco-right" aria-hidden="true">
+      <div class="deco-blob deco-blob-2"></div>
+      <div class="deco-icon-float" style="--delay:0.6s; top:14%; right:10%;">
+        <svg width="40" height="48" viewBox="0 0 52 60" fill="none"><path d="M10 10h32l2 6v34a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V16l2-6z" fill="#F6DDA0" stroke="#C98A2E" stroke-width="1.8"/><path d="M10 10c2-5 6-8 16-8s14 3 16 8" fill="none" stroke="#C98A2E" stroke-width="1.8"/><path d="M16 28h20M16 36h20M16 44h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="deco-icon-float" style="--delay:1.8s; top:48%; right:2%;">
+        <svg width="44" height="40" viewBox="0 0 70 50" fill="none"><path d="M8 30c0-14 12-22 27-22s27 8 27 22c0 8-6 14-14 14H22c-8 0-14-6-14-14z" fill="#F3D9A6" stroke="#B08655" stroke-width="1.8"/><path d="M20 22c4-6 10-9 15-9s11 3 15 9" stroke="#B08655" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/></svg>
+      </div>
+      <div class="deco-icon-float" style="--delay:3s; top:78%; right:16%;">
+        <svg width="36" height="46" viewBox="0 0 46 60" fill="none"><path d="M17 2h12l2 10-3 4v34a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V16l-3-4 2-10z" fill="#EAF3FA" stroke="#4E7FA6" stroke-width="1.8"/><rect x="16" y="26" width="14" height="12" fill="#4E7FA6" opacity="0.85"/><rect x="17" y="6" width="12" height="5" rx="1" fill="#4E7FA6"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final two lists, shown once every card has been decided -->
+  <div class="shopping-results" id="shoppingResults" style="display:none;">
+    <div class="result-column">
+      <h3>🛒 Shopping List</h3>
+      <div id="shoppingListResult" class="result-list"></div>
+    </div>
+    <div class="result-column">
+      <h3>⏳ Buy Later</h3>
+      <div id="buyLaterResult" class="result-list"></div>
+    </div>
+    <button type="button" class="modal-btn-secondary" onclick="resetShoppingSwipe()">Start Over</button>
+  </div>
+
+  <!-- Shown when nothing in the pantry currently needs shopping for -->
+  <div class="page-empty" id="shoppingEmptyState" style="display:none;">
+    <div class="page-empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
+    </div>
+    <h3>Nothing to shop for right now</h3>
+    <p>Items that are expiring, low on stock, or unavailable will show up here to review.</p>
+  </div>
+</div>
+
+
+
+<!-- ================= ALERTS PAGE ================= -->
+<div id="page-alerts" class="page">
+  <div class="page-header">
+    <div>
+      <h2>Alerts</h2>
+      <p>Expiry warnings and low-stock notifications.</p>
+    </div>
+  </div>
+  <div id="alertsPageList" class="alerts-panel" style="max-width:640px;">
+    <!-- Populated by renderAlerts() in script.js from PANTRY_ITEMS -->
+  </div>
+  <div class="page-empty" id="alertsPageEmpty" style="display:none;">
+    <div class="page-empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><path d="M10.3 3.9a2 2 0 0 1 3.4 0l8 13.6A2 2 0 0 1 20 20.5H4a2 2 0 0 1-1.7-3l8-13.6z"/><path d="M12 9.5v4M12 16.5h.01"/></svg>
+    </div>
+    <h3>You're all caught up</h3>
+    <p>No expiry warnings or low-stock alerts right now.</p>
+  </div>
+</div>
+
+<!-- ================= HISTORY PAGE ================= -->
+<div id="page-history" class="page">
+  <div class="page-header">
+    <div>
+      <h2>History</h2>
+      <p>A timeline of everything added, used &amp; removed.</p>
+    </div>
+  </div>
+
+  <!-- Populated by script.js whenever an item is removed (or restored) -->
+  <div id="historyList" class="history-list"></div>
+
+  <!-- Shown only when there's no activity logged yet -->
+  <div class="page-empty" id="historyEmptyState" style="display:flex;">
+    <div class="page-empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5C7A45" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+    </div>
+    <h3>Nothing here yet</h3>
+    <p>Removed and restored pantry items will show up here as a timeline.</p>
+  </div>
+</div>
+
+</main>
+
+<!-- ================= ADD ITEM MODAL ================= -->
+<div class="modal-overlay" id="addItemOverlay" style="display:none;" onclick="if(event.target===this) closeAddItemModal();">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Add Pantry Item</h3>
+      <button type="button" class="modal-close" onclick="closeAddItemModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="addItemForm" onsubmit="handleAddItemSubmit(event)">
+      <label class="form-label" for="addItemName">Item name</label>
+      <input class="form-input" type="text" id="addItemName" placeholder="e.g. Amul Milk" required>
+
+      <div class="form-row">
+        <div>
+          <label class="form-label" for="addItemQty">Quantity</label>
+          <input class="form-input" type="number" id="addItemQty" min="0" step="0.01" placeholder="e.g. 1.5" required>
+        </div>
+        <div>
+          <label class="form-label" for="addItemUnit">Unit</label>
+          <select class="form-input" id="addItemUnit">
+            <option value="kg">kg</option>
+            <option value="g">gram</option>
+            <option value="L">litre</option>
+            <option value="units">units</option>
+            <option value="pcs">pieces</option>
+            <option value="pack">pack</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="form-label" for="addItemCategory">Category</label>
+      <select class="form-input" id="addItemCategory">
+        <option value="vegetables">Vegetables</option>
+        <option value="fruits">Fruits</option>
+        <option value="grains">Grains &amp; Rice</option>
+        <option value="pulses">Pulses &amp; Legumes</option>
+        <option value="dairy">Dairy &amp; Eggs</option>
+        <option value="nonveg">Non-Veg</option>
+        <option value="bakery">Bakery</option>
+        <option value="snacks">Snacks</option>
+        <option value="beverages">Beverages</option>
+        <option value="others" selected>Others</option>
+      </select>
+
+      <label class="form-label" for="addItemExpiry">Expiry date <span class="form-optional">(optional — leave blank if it doesn't apply or you're not sure)</span></label>
+      <input class="form-input" type="date" id="addItemExpiry">
+
+      <div class="modal-actions">
+        <button type="button" class="modal-btn-secondary" onclick="closeAddItemModal()">Cancel</button>
+        <button type="submit" class="modal-btn-primary">Add Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="updateItemOverlay" style="display:none;" onclick="if(event.target===this) closeUpdateItemModal();">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Update Item</h3>
+      <button type="button" class="modal-close" onclick="closeUpdateItemModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="updateItemForm" onsubmit="handleUpdateItemSubmit(event)">
+      <input type="hidden" id="updateItemOriginalName">
+      <label class="form-label" for="updateItemName">Item name</label>
+      <input class="form-input" type="text" id="updateItemName" required>
+
+      <div class="form-row">
+        <div>
+          <label class="form-label" for="updateItemQty">Quantity</label>
+          <div class="stepper-row">
+            <button type="button" class="stepper-btn" onclick="adjustUpdateQty(-1)">−</button>
+            <input class="form-input stepper-input" type="number" id="updateItemQty" min="0" step="0.01" required>
+            <button type="button" class="stepper-btn" onclick="adjustUpdateQty(1)">+</button>
+          </div>
+        </div>
+        <div>
+          <label class="form-label" for="updateItemUnit">Unit</label>
+          <select class="form-input" id="updateItemUnit">
+            <option value="kg">kg</option>
+            <option value="g">gram</option>
+            <option value="L">litre</option>
+            <option value="units">units</option>
+            <option value="pcs">pieces</option>
+            <option value="pack">pack</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="form-label" for="updateItemCategory">Category</label>
+      <select class="form-input" id="updateItemCategory">
+        <option value="vegetables">Vegetables</option>
+        <option value="fruits">Fruits</option>
+        <option value="grains">Grains &amp; Rice</option>
+        <option value="pulses">Pulses &amp; Legumes</option>
+        <option value="dairy">Dairy &amp; Eggs</option>
+        <option value="nonveg">Non-Veg</option>
+        <option value="bakery">Bakery</option>
+        <option value="snacks">Snacks</option>
+        <option value="beverages">Beverages</option>
+        <option value="others">Others</option>
+      </select>
+
+      <label class="form-label" for="updateItemExpiry">Expiry date <span class="form-optional">(optional — leave blank if it doesn't apply)</span></label>
+      <input class="form-input" type="date" id="updateItemExpiry">
+
+      <div class="modal-actions">
+        <button type="button" class="modal-btn-secondary" onclick="closeUpdateItemModal()">Cancel</button>
+        <button type="submit" class="modal-btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= UNDO TOAST ================= -->
+<div class="undo-toast" id="undoToast">
+  <span id="undoToastMessage">Item removed from pantry</span>
+  <button type="button" class="undo-toast-btn" id="undoToastBtn">Undo</button>
+</div>
+
+<script src="script.js"></script>
+<script src="voice-control.js"></script>
+<script type="module" src="gesture-nav.js"></script>
 </body>
-
 </html>

@@ -4,6 +4,13 @@
    sidebar page switching, and dashboard stats.
    ============================================================ */
 
+// ---------- API base ----------
+// Always talk to the actual backend on port 3000, no matter which
+// origin this page is being viewed from — same fix used on the
+// login/signup pages (see login.html for the full explanation).
+const BACKEND_ORIGIN = "http://localhost:3000";
+const API_BASE = (window.location.origin === BACKEND_ORIGIN) ? "" : BACKEND_ORIGIN;
+
 /* ============================================================
    PANTRY PAGE — category data + rendering
    A category section is only shown when it has at least one
@@ -14,7 +21,11 @@
 // Shared illustration markup, keyed by icon type.
 const PANTRY_ICONS = {
   leaf: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M50 12C30 8 12 20 12 40c0 6 4 10 10 10 20 0 32-16 30-36-.4-1-1.4-2-2-2z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 46C26 34 36 24 48 14" stroke="#5C7A45" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  /* Colour-blind friendly veg icon: purple-pink onion */
+  onion: `<svg width="60" height="60" viewBox="0 0 60 60" fill="none"><ellipse cx="30" cy="38" rx="18" ry="16" fill="#C9A0DC" stroke="#8B5FBF" stroke-width="1.8"/><ellipse cx="30" cy="38" rx="12" ry="11" fill="#E8CFF0" opacity=".7"/><path d="M24 24c2-8 10-10 12-2 1-6 6-6 8 0" stroke="#7A9B5A" stroke-width="2" stroke-linecap="round"/><path d="M28 22c1-5 5-6 6-1" stroke="#9BC97E" stroke-width="1.6" stroke-linecap="round"/><path d="M18 36c4 2 20 2 24 0" stroke="#8B5FBF" stroke-width="1.2" opacity=".45"/></svg>`,
   apple: `<svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="36" r="18" fill="#E8694E" stroke="#C24A32" stroke-width="1.8"/><path d="M30 18c0-4 1-6 3-8" stroke="#8C6A34" stroke-width="2" stroke-linecap="round"/><path d="M33 12c3-2 6-2 8 0-2 3-6 3-8 0z" fill="#9BC97E" stroke="#5C7A45" stroke-width="1.4"/></svg>`,
+  /* Colour-blind friendly fruit icon: bunch of yellow bananas */
+  banana: `<svg width="64" height="56" viewBox="0 0 64 56" fill="none"><path d="M18 14c-6 8-8 18-4 26 6 2 10-2 12-8 2-8 0-14-8-18z" fill="#F5D76E" stroke="#C9A227" stroke-width="1.6" stroke-linejoin="round"/><path d="M28 12c-4 10-4 20 2 28 6 0 10-6 10-12 0-10-4-16-12-16z" fill="#FFE566" stroke="#C9A227" stroke-width="1.6" stroke-linejoin="round"/><path d="M38 14c-2 10 0 20 6 26 6-2 8-8 6-14-2-10-6-14-12-12z" fill="#F5D76E" stroke="#C9A227" stroke-width="1.6" stroke-linejoin="round"/><path d="M26 10c4-2 10-2 14 2" stroke="#8C6A34" stroke-width="2" stroke-linecap="round"/></svg>`,
   bottle: `<svg width="46" height="60" viewBox="0 0 46 60" fill="none"><path d="M17 2h12l2 10-3 4v34a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V16l-3-4 2-10z" fill="#EAF3FA" stroke="#4E7FA6" stroke-width="1.8"/><rect x="16" y="26" width="14" height="12" fill="#4E7FA6" opacity="0.85"/><rect x="17" y="6" width="12" height="5" rx="1" fill="#4E7FA6"/></svg>`,
   rice: `<svg width="70" height="52" viewBox="0 0 70 52" fill="none"><path d="M10 26a25 12 0 0 0 50 0z" fill="#F3E7CE" stroke="#D98A3D" stroke-width="1.6"/><ellipse cx="35" cy="26" rx="25" ry="10" fill="#FBF3DD" stroke="#D98A3D" stroke-width="1.6"/><ellipse cx="27" cy="24" rx="2.6" ry="1.4" fill="#D98A3D"/><ellipse cx="35" cy="21" rx="2.6" ry="1.4" fill="#D98A3D"/><ellipse cx="43" cy="25" rx="2.6" ry="1.4" fill="#D98A3D"/><ellipse cx="38" cy="28" rx="2.6" ry="1.4" fill="#D98A3D"/></svg>`,
   egg: `<svg width="70" height="52" viewBox="0 0 70 52" fill="none"><ellipse cx="16" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/><ellipse cx="35" cy="22" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/><ellipse cx="54" cy="30" rx="12" ry="15" fill="#FBF3DD" stroke="#D9A63D" stroke-width="1.6"/></svg>`,
@@ -27,7 +38,7 @@ const PANTRY_ICONS = {
 // Background color (css var name, without --) per icon type — kept
 // consistent everywhere an icon type is used across the app.
 const PANTRY_ICON_BG = {
-  leaf: 'green-soft', apple: 'red-soft', bottle: 'blue-soft',
+  leaf: 'green-soft', onion: 'purple-soft', apple: 'red-soft', banana: 'yellow-soft', bottle: 'blue-soft',
   rice: 'orange-soft', egg: 'yellow-soft', fish: 'teal-soft',
   snack: 'amber-soft', bread: 'tan-soft', jar: 'stone-soft'
 };
@@ -55,7 +66,42 @@ const PANTRY_CATEGORIES = [
 // and similar dry goods) — items here are shown without any expiry
 // date or "days left" countdown, since they genuinely don't spoil on
 // a short timeline.
+
 const PANTRY_NO_EXPIRY_CATEGORIES = ['grains', 'pulses'];
+
+/* ---------- Colour-blind mode ---------- */
+function isColorBlindMode() {
+  try { return localStorage.getItem('storemex_colorblind') === '1'; } catch (_) { return false; }
+}
+function applyColorBlindMode(on) {
+  document.body.classList.toggle('colorblind-mode', !!on);
+  const btn = document.getElementById('colorBlindToggle');
+  if (btn) {
+    btn.classList.toggle('active', !!on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.title = on ? 'Colour-blind mode: ON' : 'Colour-blind mode: OFF';
+  }
+}
+function toggleColorBlindMode() {
+  const next = !isColorBlindMode();
+  try { localStorage.setItem('storemex_colorblind', next ? '1' : '0'); } catch (_) {}
+  applyColorBlindMode(next);
+  // Re-render so icons swap (leaf↔onion, apple↔banana)
+  try {
+    if (typeof renderPantryPage === 'function') renderPantryPage();
+    if (typeof renderPantryGlance === 'function') renderPantryGlance();
+    if (typeof renderAlerts === 'function') renderAlerts();
+    if (typeof renderShoppingResults === 'function') renderShoppingResults();
+    if (typeof shoppingDeckInitialized !== 'undefined' && shoppingDeckInitialized && typeof renderSwipeDeck === 'function') renderSwipeDeck();
+  } catch (_) {}
+}
+function resolveIconKey(iconKey) {
+  if (!isColorBlindMode()) return iconKey;
+  if (iconKey === 'leaf') return 'onion';
+  if (iconKey === 'apple') return 'banana';
+  return iconKey;
+}
+
 
 // Real pantry data. Seeded with a few out-of-stock staples (qty 0)
 // so Unavailable alerts and the Shopping List have something to
@@ -67,6 +113,7 @@ const PANTRY_NO_EXPIRY_CATEGORIES = ['grains', 'pulses'];
 const PANTRY_ITEMS = [
   { name: 'Rice',   category: 'grains',     icon: 'rice',  size: '0 kg',  unit: 'kg',  qty: 0 },
   { name: 'Milk',   category: 'dairy',      icon: 'egg',   size: '0 L',   unit: 'L',   qty: 0 },
+  { name: 'Eggs',   category: 'dairy',      icon: 'egg',   size: '12 pcs', unit: 'pcs', qty: 12 },
   { name: 'Potato', category: 'vegetables', icon: 'leaf',  size: '0 kg',  unit: 'kg',  qty: 0 },
   { name: 'Onion',  category: 'vegetables', icon: 'leaf',  size: '0 kg',  unit: 'kg',  qty: 0 },
   { name: 'Bread',  category: 'bakery',     icon: 'bread', size: '0 pcs', unit: 'pcs', qty: 0 }
@@ -172,51 +219,191 @@ function getUnavailableItems() {
   return PANTRY_ITEMS.filter(i => i.qty === 0);
 }
 
-// Recipe catalog — starts empty (no hardcoded recipes). A recipe only
-// counts as a "match" and only shows up on the dashboard when every
-// one of its ingredients is actually present in PANTRY_ITEMS
-// (case-insensitive substring match against item names) — nothing is
-// shown that isn't genuinely in stock.
-const RECIPE_CATALOG = [];
+// Recipe suggestions now come from the AI backend (see
+// backend/ai/recipeSuggester.js) instead of a hardcoded catalog —
+// it's asked to suggest realistic, SIMPLE recipes that use ONLY
+// what's actually in PANTRY_ITEMS right now (plus basic staples like
+// salt/oil/water), refreshed automatically whenever the pantry changes.
+let AI_RECIPES = [];
+let aiRecipesLoading = false;
+let aiRecipesError = null;
+let aiRecipesFetchTimer = null;
 
-function getMatchedRecipes() {
-  const stockNames = PANTRY_ITEMS.map(i => i.name.toLowerCase());
-  return RECIPE_CATALOG.filter(recipe =>
-    recipe.ingredients.every(ing => stockNames.some(name => name.includes(ing)))
-  );
+// Debounced trigger — call this after any pantry mutation instead of
+// hitting the API directly, so a burst of changes (e.g. deleting
+// several items in a row) only fires one request.
+function scheduleAiRecipesRefresh() {
+  if (aiRecipesFetchTimer) clearTimeout(aiRecipesFetchTimer);
+  aiRecipesFetchTimer = setTimeout(fetchAiRecipes, 500);
+}
+
+async function fetchAiRecipes() {
+  const availableItems = PANTRY_ITEMS.filter(i => i.qty > 0);
+
+  if (availableItems.length === 0) {
+    AI_RECIPES = [];
+    aiRecipesError = null;
+    aiRecipesLoading = false;
+    renderRecipes();
+    renderRecipesPage();
+    return;
+  }
+
+  aiRecipesLoading = true;
+  aiRecipesError = null;
+  renderRecipes();
+  renderRecipesPage();
+
+  try {
+    const payload = {
+      items: availableItems.map(i => {
+        const cat = PANTRY_CATEGORIES.find(c => c.key === i.category);
+        return { name: i.name, category: cat ? cat.label : i.category };
+      })
+    };
+    const res = await fetch(`${API_BASE}/api/recipes/suggest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const body = await res.json();
+    if (!res.ok || !body.success) {
+      throw new Error(body.error || 'Could not get recipe suggestions.');
+    }
+    AI_RECIPES = Array.isArray(body.data) ? body.data : [];
+  } catch (err) {
+    aiRecipesError = err.message;
+    AI_RECIPES = [];
+  } finally {
+    aiRecipesLoading = false;
+    renderRecipes();
+    renderRecipesPage();
+  }
 }
 
 const RECIPE_TIMER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.5 2"/></svg>`;
 const RECIPE_DIFFICULTY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>`;
 const RECIPE_HEART_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4.5-3-8-6.3-8-10.5A5.5 5.5 0 0 1 12 7a5.5 5.5 0 0 1 8 3.5c0 4.2-3.5 7.5-8 10.5z"/></svg>`;
 
+// Recipe tags come back as free-form text from the AI, so their pill
+// color is derived from the text itself — same tag always gets the
+// same color, without needing a hardcoded lookup table.
+const RECIPE_TAG_COLORS = ['#5C7A45', '#D9A63D', '#C24A32', '#4E7FA6', '#8A6FB0', '#4E9A8A'];
+function recipeTagColor(tag) {
+  const text = tag || '';
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) hash = text.charCodeAt(i) + ((hash << 5) - hash);
+  return RECIPE_TAG_COLORS[Math.abs(hash) % RECIPE_TAG_COLORS.length];
+}
+
 function renderRecipeCard(recipe) {
   return `
     <div class="recipe-card">
       <div class="recipe-body">
-        <span class="recipe-tag-pill" style="background:${recipe.tagColor};">${recipe.tag}</span>
+        <span class="recipe-tag-pill" style="background:${recipeTagColor(recipe.tag)};">${escapeHtmlText(recipe.tag || 'Recipe')}</span>
         <div class="recipe-title-row">
-          <span class="recipe-title">${recipe.title}</span>
+          <span class="recipe-title">${escapeHtmlText(recipe.title)}</span>
           ${RECIPE_HEART_ICON}
         </div>
         <div class="recipe-meta">
-          <span>${RECIPE_TIMER_ICON}${recipe.time}</span>
-          <span>${RECIPE_DIFFICULTY_ICON}${recipe.difficulty}</span>
+          <span>${RECIPE_TIMER_ICON}${escapeHtmlText(recipe.time || '')}</span>
+          <span>${RECIPE_DIFFICULTY_ICON}${escapeHtmlText(recipe.difficulty || '')}</span>
         </div>
-        <div class="recipe-uses">Uses ${recipe.ingredients.join(', ')}</div>
+        <div class="recipe-uses">Uses ${(recipe.ingredients || []).map(escapeHtmlText).join(', ')}</div>
       </div>
     </div>`;
+}
+
+function renderRecipeLoadingCard() {
+  return `<div class="recipe-loading-card"><div class="scan-spinner"></div><span>Cooking up ideas from your pantry…</span></div>`;
+}
+
+function renderRecipeEmptyCard(message) {
+  return `<div class="recipe-empty-card">${escapeHtmlText(message)}</div>`;
 }
 
 function renderRecipes() {
   const row = document.getElementById('recipeRow');
   const dots = document.getElementById('recipeDots');
   if (!row) return;
-  const matched = getMatchedRecipes();
-  row.innerHTML = matched.map(renderRecipeCard).join('');
-  if (dots) {
-    dots.innerHTML = matched.map((_, i) => `<span class="${i === 0 ? 'active' : ''}"></span>`).join('');
+
+  if (aiRecipesLoading) {
+    row.innerHTML = renderRecipeLoadingCard();
+    if (dots) dots.innerHTML = '';
+    return;
   }
+  if (aiRecipesError) {
+    row.innerHTML = renderRecipeEmptyCard("Couldn't load recipe ideas — check the backend server is running.");
+    if (dots) dots.innerHTML = '';
+    return;
+  }
+  if (AI_RECIPES.length === 0) {
+    row.innerHTML = renderRecipeEmptyCard('Add a few items to your pantry to get AI recipe ideas.');
+    if (dots) dots.innerHTML = '';
+    return;
+  }
+
+  const preview = AI_RECIPES.slice(0, 4);
+  row.innerHTML = preview.map(renderRecipeCard).join('');
+  if (dots) {
+    dots.innerHTML = preview.map((_, i) => `<span class="${i === 0 ? 'active' : ''}"></span>`).join('');
+  }
+}
+
+/* ---------- Recipes page (full list, with steps) ---------- */
+
+let expandedRecipeIdx = null;
+
+function toggleRecipeSteps(idx) {
+  expandedRecipeIdx = expandedRecipeIdx === idx ? null : idx;
+  renderRecipesPage();
+}
+
+function renderRecipePageCard(recipe, idx) {
+  const isOpen = expandedRecipeIdx === idx;
+  const steps = recipe.steps || [];
+  return `
+    <div class="recipe-card recipe-page-card ${isOpen ? 'open' : ''}" onclick="toggleRecipeSteps(${idx})">
+      <div class="recipe-body">
+        <span class="recipe-tag-pill" style="background:${recipeTagColor(recipe.tag)};">${escapeHtmlText(recipe.tag || 'Recipe')}</span>
+        <div class="recipe-title-row">
+          <span class="recipe-title">${escapeHtmlText(recipe.title)}</span>
+          ${RECIPE_HEART_ICON}
+        </div>
+        <div class="recipe-meta">
+          <span>${RECIPE_TIMER_ICON}${escapeHtmlText(recipe.time || '')}</span>
+          <span>${RECIPE_DIFFICULTY_ICON}${escapeHtmlText(recipe.difficulty || '')}</span>
+        </div>
+        <div class="recipe-uses">Uses ${(recipe.ingredients || []).map(escapeHtmlText).join(', ')}</div>
+        ${steps.length ? `
+          <div class="recipe-steps-toggle">${isOpen ? 'Hide steps' : 'View steps'} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:11px;height:11px;transform:rotate(${isOpen ? -90 : 90}deg);"><path d="m9 6 6 6-6 6"/></svg></div>
+          <ol class="recipe-steps-list" style="display:${isOpen ? 'flex' : 'none'};">
+            ${steps.map(s => `<li>${escapeHtmlText(s)}</li>`).join('')}
+          </ol>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderRecipesPage() {
+  const grid = document.getElementById('recipesPageGrid');
+  const empty = document.getElementById('recipesPageEmpty');
+  const loading = document.getElementById('recipesPageLoading');
+  const error = document.getElementById('recipesPageError');
+  if (!grid) return;
+
+  loading.style.display = aiRecipesLoading ? 'flex' : 'none';
+  error.style.display = (!aiRecipesLoading && aiRecipesError) ? 'flex' : 'none';
+  if (error) error.querySelector('span').textContent = aiRecipesError ? `Couldn't load recipe ideas: ${aiRecipesError}. Make sure the backend server is running on localhost:3000.` : '';
+
+  const showEmpty = !aiRecipesLoading && !aiRecipesError && AI_RECIPES.length === 0;
+  empty.style.display = showEmpty ? 'flex' : 'none';
+
+  if (aiRecipesLoading || aiRecipesError || showEmpty) {
+    grid.innerHTML = '';
+    return;
+  }
+
+  grid.innerHTML = AI_RECIPES.map((r, i) => renderRecipePageCard(r, i)).join('');
 }
 
 /* ---------- Grouped alerts: Expiring Soon / Restock / Unavailable ---------- */
@@ -244,7 +431,7 @@ function renderAlertGroups(limitPerGroup) {
   const unavailable = getUnavailableItems();
 
   const expiringCards = (limitPerGroup ? expiring.slice(0, limitPerGroup) : expiring)
-    .map(item => alertCard(item.name, item.days <= 0 ? 'Expires today' : item.days === 1 ? 'Expires in 1 day' : `Expires in ${item.days} days`, '#E8694E'))
+    .map(item => alertCard(item.name, item.days <= 0 ? 'Expires today' : item.days === 1 ? 'Expires in 1 day' : `Expires in ${item.days} days`, isColorBlindMode() ? '#7B5EA7' : '#E8694E'))
     .join('');
 
   const restockCards = (limitPerGroup ? restock.slice(0, limitPerGroup) : restock)
@@ -256,7 +443,7 @@ function renderAlertGroups(limitPerGroup) {
     .join('');
 
   const html =
-    alertSection('Expiring Soon', '#E8694E', expiringCards) +
+    alertSection('Expiring Soon', isColorBlindMode() ? '#7B5EA7' : '#E8694E', expiringCards) +
     alertSection('Restock', '#E8C23D', restockCards) +
     alertSection('Unavailable', '#9B968A', unavailableCards);
 
@@ -305,36 +492,57 @@ function renderStats() {
   if (totalEl) totalEl.textContent = PANTRY_ITEMS.length;
   if (expiringEl) expiringEl.textContent = getExpiringSoonItems().length;
   if (lowStockEl) lowStockEl.textContent = getRestockItems().length;
-  if (recipeEl) recipeEl.textContent = getMatchedRecipes().length;
+  if (recipeEl) recipeEl.textContent = AI_RECIPES.length;
 }
 
 function pantryDaysBadgeColor(days) {
-  if (days <= 1) return '#C24A32';
+  if (days <= 1) return isColorBlindMode() ? '#7B5EA7' : '#C24A32';
   if (days <= 5) return '#D9A63D';
-  return '#5C7A45';
+  return isColorBlindMode() ? '#4E7FA6' : '#5C7A45';
 }
 
 function renderPantryCard(item) {
   const bg = PANTRY_ICON_BG[item.icon] || 'green-soft';
   const noExpiry = PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category) || item.days == null;
 
+  // Urgency styling: an item expiring within 2 days is the most urgent
+  // thing in the pantry, so it gets the red, bouncing treatment to grab
+  // attention. Low-stock items get a calmer yellow highlight instead -
+  // no bounce, since it's a "notice when convenient" not a "look now."
+  // If both apply, expiry wins - it's the more time-sensitive problem.
+  const isCritical = !noExpiry && item.days <= 2;
+  const isRestock = !isCritical && isLowStock(item);
+  const isSafe = !isCritical && !isRestock && item.qty > 0;
+  const urgencyClass = isCritical ? ' card-critical' : (isRestock ? ' card-restock' : (isSafe ? ' card-safe' : ''));
+
   let badge = '';
   if (!noExpiry) {
     const badgeColor = pantryDaysBadgeColor(item.days);
     const dayLabel = item.days === 1 ? '1 day left' : item.days + ' days left';
     badge = `<span class="days-badge" style="color:${badgeColor};">${dayLabel}</span>`;
+  } else if (item.qty === 0) {
+    badge = `<span class="days-badge" style="color:${isColorBlindMode() ? '#7B5EA7' : 'var(--red)'};">Out of Stock</span>`;
+  } else if (isLowStock(item)) {
+    badge = `<span class="days-badge" style="color:var(--yellow);">Low Stock</span>`;
   } else {
-    badge = `<span class="days-badge" style="color:#5C7A45;">In Stock</span>`;
+    badge = `<span class="days-badge" style="color:${isColorBlindMode() ? '#4E7FA6' : '#5C7A45'};">In Stock</span>`;
   }
 
   return `
-    <div class="pantry-card">
-      <button class="pantry-delete-btn" type="button" title="Remove ${item.name}" onclick="deleteItem('${item.name.replace(/'/g, "\\'")}', event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
+    <div class="pantry-card${urgencyClass}">
+      <div class="pantry-card-menu">
+        <button class="pantry-menu-btn" type="button" title="More options" onclick="togglePantryCardMenu(event, '${item.name.replace(/'/g, "\\'")}')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
+        </button>
+        <div class="pantry-menu-dropdown">
+          <button type="button" onclick="openUpdateItemModal('${item.name.replace(/'/g, "\\'")}', event)">✏️ Update</button>
+          <button type="button" onclick="markItemUsed('${item.name.replace(/'/g, "\\'")}', event)">✅ Mark Used/Removed</button>
+          <button type="button" class="danger" onclick="deleteItem('${item.name.replace(/'/g, "\\'")}', event)">🗑️ Delete</button>
+        </div>
+      </div>
       <div class="pantry-illustration" style="background:var(--${bg});">
         ${badge}
-        ${PANTRY_ICONS[item.icon] || ''}
+        ${PANTRY_ICONS[resolveIconKey(item.icon)] || ''}
       </div>
       <div class="pantry-name">${item.name}</div>
       <div class="pantry-meta">${formatMeta(item)}</div>
@@ -361,7 +569,7 @@ function renderPantryPage() {
     section.className = 'pantry-section';
     section.innerHTML = `
       <div class="pantry-section-head">
-        <div class="pantry-section-icon" style="background:var(--${bg});">${PANTRY_ICONS[cat.icon] || ''}</div>
+        <div class="pantry-section-icon" style="background:var(--${bg});">${PANTRY_ICONS[resolveIconKey(cat.icon)] || ''}</div>
         <span class="pantry-section-title">${cat.label}</span>
         <span class="pantry-section-count">${countLabel}</span>
       </div>
@@ -526,7 +734,7 @@ function shoppingStatusForItem(item) {
   if (item.qty === 0) return { label: 'Unavailable', color: 'var(--sidebar-text-dim)' };
   if (!isNoExpiryItem(item) && item.days <= EXPIRING_SOON_WITHIN_DAYS) {
     const label = item.days <= 0 ? 'Expires Today' : item.days === 1 ? 'Expires in 1 day' : `Expires in ${item.days} days`;
-    return { label, color: '#E8694E' };
+    return { label, color: isColorBlindMode() ? '#7B5EA7' : '#E8694E' };
   }
   if (isLowStock(item)) return { label: 'Low Stock', color: '#E8C23D' };
   return { label: 'In Stock', color: '#5C7A45' };
@@ -553,14 +761,32 @@ function initShoppingSwipe() {
       unit: item.unit || 'units'
     };
   });
+  // Preserve voice-added shopping / buy-later rows unless Start Over
+  const keepShop = Array.isArray(SHOPPING_RESULT) ? SHOPPING_RESULT.slice() : [];
+  const keepLater = Array.isArray(BUY_LATER_RESULT) ? BUY_LATER_RESULT.slice() : [];
   SWIPE_INDEX = 0;
-  SHOPPING_RESULT = [];
-  BUY_LATER_RESULT = [];
+  SHOPPING_RESULT = keepShop;
+  BUY_LATER_RESULT = keepLater;
   shoppingDeckInitialized = true;
+  // If user already has voice shopping items and no cards left to swipe, show results
+  if (keepShop.length || keepLater.length) {
+    if (SWIPE_DECK.length === 0) {
+      renderShoppingResults();
+      const resultsEl = document.getElementById('shoppingResults');
+      const layoutEl = document.getElementById('shoppingLayout');
+      const emptyEl = document.getElementById('shoppingEmptyState');
+      if (resultsEl) resultsEl.style.display = 'flex';
+      if (layoutEl) layoutEl.style.display = 'none';
+      if (emptyEl) emptyEl.style.display = 'none';
+      return;
+    }
+  }
   renderSwipeDeck();
 }
 
 function resetShoppingSwipe() {
+  SHOPPING_RESULT = [];
+  BUY_LATER_RESULT = [];
   shoppingDeckInitialized = false;
   initShoppingSwipe();
 }
@@ -607,7 +833,7 @@ function renderSwipeCard(item, stackPos, globalIdx) {
   const isTop = stackPos === 0;
   const iconKey = item.icon || 'jar';
   const bg = PANTRY_ICON_BG[iconKey] || 'green-soft';
-  const iconSvg = PANTRY_ICONS[iconKey] || PANTRY_ICONS.jar;
+  const iconSvg = PANTRY_ICONS[resolveIconKey(iconKey)] || PANTRY_ICONS.jar;
   return `
     <div class="swipe-card ${stackClass}" data-top="${isTop}" data-idx="${globalIdx}" style="z-index:${10 - stackPos};">
       <div class="swipe-overlay-label left">BUY LATER</div>
@@ -937,6 +1163,136 @@ function handleAddItemSubmit(evt) {
   renderRecipes();
   renderAlerts();
   renderStats();
+  scheduleAiRecipesRefresh();
+}
+
+/* ---------- Pantry card 3-dot menu (Update / Mark Used / Delete) ---------- */
+function togglePantryCardMenu(evt, name) {
+  evt.stopPropagation();
+  const dropdown = evt.currentTarget.nextElementSibling;
+  const wasOpen = dropdown.classList.contains('open');
+  closeAllPantryCardMenus();
+  if (!wasOpen) dropdown.classList.add('open');
+}
+
+function closeAllPantryCardMenus() {
+  document.querySelectorAll('.pantry-menu-dropdown.open').forEach(d => d.classList.remove('open'));
+}
+document.addEventListener('click', closeAllPantryCardMenus);
+
+/* ---------- Update pantry item (name, qty, unit, category, expiry) ---------- */
+function openUpdateItemModal(name, evt) {
+  if (evt) evt.stopPropagation();
+  closeAllPantryCardMenus();
+
+  const item = PANTRY_ITEMS.find(i => i.name === name);
+  if (!item) return;
+
+  document.getElementById('updateItemOriginalName').value = item.name;
+  document.getElementById('updateItemName').value = item.name;
+  document.getElementById('updateItemQty').value = item.qty;
+  document.getElementById('updateItemUnit').value = item.unit;
+  document.getElementById('updateItemCategory').value = item.category;
+
+  const expiryInput = document.getElementById('updateItemExpiry');
+  if (expiryInput) {
+    if (item.days != null && !PANTRY_NO_EXPIRY_CATEGORIES.includes(item.category)) {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + item.days);
+      expiryInput.value = d.toISOString().slice(0, 10);
+    } else {
+      expiryInput.value = '';
+    }
+  }
+
+  const overlay = document.getElementById('updateItemOverlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeUpdateItemModal() {
+  const overlay = document.getElementById('updateItemOverlay');
+  if (overlay) overlay.style.display = 'none';
+  const form = document.getElementById('updateItemForm');
+  if (form) form.reset();
+}
+
+function adjustUpdateQty(delta) {
+  const input = document.getElementById('updateItemQty');
+  if (!input) return;
+  let val = parseFloat(input.value);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, Math.round((val + delta) * 100) / 100);
+  input.value = val;
+}
+
+function handleUpdateItemSubmit(evt) {
+  evt.preventDefault();
+
+  const originalName = document.getElementById('updateItemOriginalName').value;
+  const item = PANTRY_ITEMS.find(i => i.name === originalName);
+  if (!item) { closeUpdateItemModal(); return; }
+
+  const name = document.getElementById('updateItemName').value.trim();
+  const qty = parseFloat(document.getElementById('updateItemQty').value); // decimals allowed
+  const unit = document.getElementById('updateItemUnit').value;
+  const category = document.getElementById('updateItemCategory').value;
+  const expiryValue = document.getElementById('updateItemExpiry').value;
+
+  if (!name || isNaN(qty) || qty < 0) return;
+
+  item.name = name;
+  item.qty = qty;
+  item.unit = unit;
+  item.size = `${formatQty(qty)} ${unit}`;
+  item.category = category;
+  item.icon = iconForCategory(category);
+
+  if (expiryValue) {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiryDate = new Date(expiryValue + 'T00:00:00');
+    let days = Math.round((expiryDate - today) / msPerDay);
+    if (days < 0) days = 0;
+    item.days = days;
+  } else {
+    delete item.days;
+  }
+
+  addHistoryEntry(`${item.name} was updated`);
+
+  closeUpdateItemModal();
+  renderPantryPage();
+  renderPantryGlance();
+  renderRecipes();
+  renderAlerts();
+  renderStats();
+  scheduleAiRecipesRefresh();
+}
+
+// "Mark Used/Removed" — the product was used up or thrown away (e.g.
+// expiry got too close), so it's zeroed out to Out of Stock rather
+// than deleted outright: qty -> 0 and expiry cleared to none.
+function markItemUsed(name, evt) {
+  if (evt) evt.stopPropagation();
+  closeAllPantryCardMenus();
+
+  const item = PANTRY_ITEMS.find(i => i.name === name);
+  if (!item) return;
+
+  item.qty = 0;
+  item.size = `0 ${item.unit}`;
+  delete item.days;
+
+  addHistoryEntry(`${item.name} was marked as used/removed`);
+
+  renderPantryPage();
+  renderPantryGlance();
+  renderRecipes();
+  renderAlerts();
+  renderStats();
+  scheduleAiRecipesRefresh();
 }
 
 /* ---------- Delete pantry item (with Undo + History log) ---------- */
@@ -991,6 +1347,7 @@ function deleteItem(name, evt) {
   renderRecipes();
   renderAlerts();
   renderStats();
+  scheduleAiRecipesRefresh();
 
   const historyEntry = addHistoryEntry(`${removed.name} was removed from pantry`);
 
@@ -1006,6 +1363,7 @@ function deleteItem(name, evt) {
     renderRecipes();
     renderAlerts();
     renderStats();
+    scheduleAiRecipesRefresh();
   });
 }
 
@@ -1081,4 +1439,322 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAlerts();
   renderStats();
   renderHistoryPage();
+  setupScanDropzone();
+  setupScanCamera();
+  fetchAiRecipes(); // initial AI recipe fetch based on whatever's already in the pantry
+});
+
+/* ============================================================
+   SCAN PRODUCT — upload / drag-drop / camera capture, wired to
+   the real backend AI + barcode scanner at POST /api/scan.
+   ============================================================ */
+
+let scanCameraStream = null;
+
+function setupScanDropzone() {
+  const dropzone = document.getElementById('scanDropzone');
+  const fileInput = document.getElementById('scanFileInput');
+  const uploadBtn = document.getElementById('scanUploadBtn');
+  if (!dropzone || !fileInput || !uploadBtn) return;
+
+  // Click anywhere on the dropzone (or the button) opens the file picker.
+  // The "Use Camera" button lives inside the dropzone too, so its own
+  // click handler stops the event from bubbling up to this one.
+  dropzone.addEventListener('click', () => fileInput.click());
+  uploadBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  ['dragenter', 'dragover'].forEach(evtName => {
+    dropzone.addEventListener(evtName, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(evtName => {
+    dropzone.addEventListener(evtName, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+    });
+  });
+  dropzone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files && files.length) handleScanFile(files[0]);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files.length) {
+      handleScanFile(fileInput.files[0]);
+      fileInput.value = ''; // allow re-selecting the same file later
+    }
+  });
+}
+
+function setupScanCamera() {
+  const openBtn = document.getElementById('scanOpenCameraBtn');
+  const closeBtn = document.getElementById('scanCloseCameraBtn');
+  const captureBtn = document.getElementById('scanCaptureBtn');
+  if (!openBtn || !closeBtn || !captureBtn) return;
+
+  openBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openScanCamera();
+  });
+  closeBtn.addEventListener('click', closeScanCamera);
+  captureBtn.addEventListener('click', captureScanPhoto);
+}
+
+function openScanCamera() {
+  const box = document.getElementById('scanCameraBox');
+  const video = document.getElementById('scanVideo');
+  const status = document.getElementById('scanCameraStatus');
+  if (!box || !video) return;
+
+  box.style.display = 'flex';
+  if (status) status.textContent = '';
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (status) status.textContent = 'Camera not supported on this device — use "Select Image" instead.';
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+      scanCameraStream = stream;
+      video.srcObject = stream;
+    })
+    .catch(() => {
+      if (status) status.textContent = 'Camera access denied or unavailable — use "Select Image" instead.';
+    });
+}
+
+function closeScanCamera() {
+  const box = document.getElementById('scanCameraBox');
+  const video = document.getElementById('scanVideo');
+  if (scanCameraStream) {
+    scanCameraStream.getTracks().forEach(t => t.stop());
+    scanCameraStream = null;
+  }
+  if (video) video.srcObject = null;
+  if (box) box.style.display = 'none';
+}
+
+function captureScanPhoto() {
+  const video = document.getElementById('scanVideo');
+  const canvas = document.getElementById('scanCanvas');
+  if (!video || !canvas || !scanCameraStream) return;
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+  closeScanCamera();
+  sendImageToScanApi(dataUrl);
+}
+
+function handleScanFile(file) {
+  if (!file.type || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = () => sendImageToScanApi(reader.result);
+  reader.readAsDataURL(file);
+}
+
+// Best-effort match of whatever category text the AI/barcode lookup
+// returns (e.g. "Snacks", "en:beverages", "Dairy Products") onto one
+// of our own category keys — falls back to "others" so nothing is
+// ever lost, and the person can always correct it in the form below.
+function mapScanCategory(rawCategory) {
+  if (!rawCategory) return 'others';
+  const text = rawCategory.toLowerCase();
+  const found = PANTRY_CATEGORIES.find(c =>
+    text.includes(c.key) || text.includes(c.label.toLowerCase().split(' ')[0])
+  );
+  if (found) return found.key;
+  if (/veg/.test(text)) return 'vegetables';
+  if (/fruit/.test(text)) return 'fruits';
+  if (/rice|flour|grain|atta|cereal/.test(text)) return 'grains';
+  if (/pulse|lentil|dal|bean|legume/.test(text)) return 'pulses';
+  if (/dairy|milk|egg|curd|paneer|cheese|yog/.test(text)) return 'dairy';
+  if (/meat|chicken|fish|mutton|prawn|seafood/.test(text)) return 'nonveg';
+  if (/bread|bakery|bun|cake/.test(text)) return 'bakery';
+  if (/snack|chips|namkeen|noodle|biscuit/.test(text)) return 'snacks';
+  if (/drink|beverage|juice|soda|water|cola/.test(text)) return 'beverages';
+  return 'others';
+}
+
+function sendImageToScanApi(imageDataUrl) {
+  const resultArea = document.getElementById('scanResultArea');
+  if (!resultArea) return;
+
+  resultArea.innerHTML = `
+    <div class="scan-loading">
+      <div class="scan-spinner"></div>
+      <span>Scanning package for a barcode, then checking with AI vision if needed…</span>
+    </div>`;
+
+  fetch(`${API_BASE}/api/scan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: imageDataUrl })
+  })
+    .then(res => res.json().then(body => ({ ok: res.ok, body })))
+    .then(({ ok, body }) => {
+      if (!ok || !body.success) {
+        throw new Error(body.error || 'Scan failed — please try a clearer photo.');
+      }
+      renderScanResult(body.data, imageDataUrl);
+    })
+    .catch(err => {
+      resultArea.innerHTML = `
+        <div class="scan-error">
+          <span>Couldn't complete the scan: ${escapeHtmlText(err.message)}. Make sure the storemex backend server is running on <strong>localhost:3000</strong>, then try again.</span>
+          <button type="button" class="modal-btn-secondary" onclick="document.getElementById('scanResultArea').innerHTML=''">Dismiss</button>
+        </div>`;
+    });
+}
+
+function renderScanResult(data, imageDataUrl) {
+  const resultArea = document.getElementById('scanResultArea');
+  if (!resultArea) return;
+
+  const categoryKey = mapScanCategory(data.category);
+  const sourceLabel = data.source === 'barcode' ? 'Identified via Barcode' : 'Identified via AI Vision';
+  const confidencePct = Math.round((data.confidence || 0) * 100);
+
+  resultArea.innerHTML = `
+    <div class="scan-result-card">
+      <img class="scan-result-thumb" src="${imageDataUrl}" alt="Scanned package">
+      <div class="scan-result-fields">
+        <div class="scan-result-badges">
+          <span class="scan-source-badge">${sourceLabel}</span>
+          <span class="scan-confidence-badge">${confidencePct}% confidence</span>
+          ${data.needs_review ? '<span class="scan-confidence-badge" style="background:var(--red-soft);color:#C24A32;">Please double-check</span>' : ''}
+        </div>
+
+        <label class="form-label" for="scanResultName">Item name</label>
+        <input class="form-input" type="text" id="scanResultName" value="${escapeHtmlText(data.name || '')}">
+
+        <div class="scan-result-row">
+          <div>
+            <label class="form-label" for="scanResultQty">Quantity</label>
+            <input class="form-input" type="number" id="scanResultQty" min="0" step="0.01" value="${data.quantity != null ? data.quantity : 1}">
+          </div>
+          <div>
+            <label class="form-label" for="scanResultUnit">Unit</label>
+            <select class="form-input" id="scanResultUnit">
+              <option value="kg">kg</option>
+              <option value="g">gram</option>
+              <option value="L">litre</option>
+              <option value="ml">ml</option>
+              <option value="units">units</option>
+              <option value="pcs">pieces</option>
+              <option value="pack">pack</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="form-label" for="scanResultCategory">Category</label>
+        <select class="form-input" id="scanResultCategory">
+          ${PANTRY_CATEGORIES.map(c => `<option value="${c.key}" ${c.key === categoryKey ? 'selected' : ''}>${c.label}</option>`).join('')}
+        </select>
+
+        <label class="form-label" for="scanResultExpiry">Expiry date <span class="form-optional">(optional)</span></label>
+        <input class="form-input" type="date" id="scanResultExpiry" value="${data.expiry_date || ''}">
+
+        <div class="modal-actions">
+          <button type="button" class="modal-btn-secondary" onclick="document.getElementById('scanResultArea').innerHTML=''">Discard</button>
+          <button type="button" class="modal-btn-primary" onclick="confirmScanAddToPantry()">Add to Pantry</button>
+        </div>
+      </div>
+    </div>`;
+
+  // Pre-select the unit the scan actually returned, if it's one we support.
+  const unitSelect = document.getElementById('scanResultUnit');
+  const rawUnit = (data.unit || '').toLowerCase();
+  const unitMap = { g: 'g', gram: 'g', grams: 'g', kg: 'kg', ml: 'ml', l: 'L', litre: 'L', liter: 'L', pcs: 'pcs', piece: 'pcs', pieces: 'pcs', count: 'pcs', pack: 'pack', packet: 'pack', unit: 'units', units: 'units' };
+  if (unitSelect && unitMap[rawUnit]) unitSelect.value = unitMap[rawUnit];
+}
+
+function confirmScanAddToPantry() {
+  const nameInput = document.getElementById('scanResultName');
+  const qtyInput = document.getElementById('scanResultQty');
+  const unitSelect = document.getElementById('scanResultUnit');
+  const categorySelect = document.getElementById('scanResultCategory');
+  const expiryInput = document.getElementById('scanResultExpiry');
+  if (!nameInput || !qtyInput || !unitSelect || !categorySelect) return;
+
+  const name = nameInput.value.trim();
+  const qty = parseFloat(qtyInput.value);
+  const unit = unitSelect.value;
+  const category = categorySelect.value;
+  const expiryValue = expiryInput ? expiryInput.value : '';
+
+  if (!name || isNaN(qty) || qty < 0) {
+    nameInput.style.borderColor = !name ? '#C24A32' : '';
+    qtyInput.style.borderColor = (isNaN(qty) || qty < 0) ? '#C24A32' : '';
+    return;
+  }
+
+  let days;
+  if (expiryValue) {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiryDate = new Date(expiryValue + 'T00:00:00');
+    days = Math.round((expiryDate - today) / msPerDay);
+    if (days < 0) days = 0;
+  }
+
+  const normalizedNew = normalizeItemName(name);
+  const existing = PANTRY_ITEMS.find(i =>
+    normalizeItemName(i.name) === normalizedNew && unitsCompatible(i.unit, unit)
+  );
+
+  if (existing) {
+    const convertedQty = convertQty(qty, unit, existing.unit);
+    existing.qty = Math.round((existing.qty + convertedQty) * 100) / 100;
+    existing.size = `${formatQty(existing.qty)} ${existing.unit}`;
+    if (existing.category === 'others' && category !== 'others') {
+      existing.category = category;
+      existing.icon = iconForCategory(category);
+    }
+    if (days !== undefined && (existing.days === undefined || days < existing.days)) {
+      existing.days = days;
+    }
+    addHistoryEntry(`${existing.name} was updated via scan — now ${formatQty(existing.qty)} ${existing.unit} in stock`);
+  } else {
+    const newItem = {
+      name,
+      category,
+      icon: iconForCategory(category),
+      size: `${formatQty(qty)} ${unit}`,
+      unit,
+      qty,
+      ...(days !== undefined ? { days } : {})
+    };
+    PANTRY_ITEMS.push(newItem);
+    addHistoryEntry(`${newItem.name} was added to the pantry via scan`);
+  }
+
+  const resultArea = document.getElementById('scanResultArea');
+  if (resultArea) {
+    resultArea.innerHTML = `<div class="scan-loading" style="background:var(--green-soft);color:#5C7A45;"><span>✓ ${escapeHtmlText(name)} added to your pantry.</span></div>`;
+    setTimeout(() => { resultArea.innerHTML = ''; }, 2600);
+  }
+
+  renderPantryPage();
+  renderPantryGlance();
+  renderRecipes();
+  renderAlerts();
+  renderStats();
+  scheduleAiRecipesRefresh();
+}
+
+
+/* Restore colour-blind preference on load */
+document.addEventListener('DOMContentLoaded', function () {
+  applyColorBlindMode(isColorBlindMode());
 });

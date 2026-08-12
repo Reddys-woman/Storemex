@@ -1,0 +1,58 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "slots": [],
+          "name": "HelloWorldIntent",
+          "samples": [
+            "hello",
+            "how are you",
+            "say hi world",
+            "say hi",
+            "hi",
+            "say hello world",
+            "say hello"
+          ]
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "slots": [],
+          "name": "GetPantryIntent",
+          "samples": [
+            "tell me what I have",
+            "show me what I have",
+            "what items do I have",
+            "what food do I have",
+            "what do I have in my pantry",
+            "tell me what\u0027s in my pantry",
+            "show me my pantry",
+            "what is in my pantry",
+            "what\u0027s in my pantry"
+          ]
+        }
+      ],
+      "types": [],
+      "invocationName": "store mex"
+    }
+  }
+}

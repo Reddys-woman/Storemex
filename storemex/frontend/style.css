@@ -268,6 +268,42 @@
     display:flex;flex-direction:column;gap:10px;
     position:relative;
   }
+
+  /* Safe / fully stocked (not low, not expiring) — light green cue */
+  .pantry-card.card-safe{
+    background:linear-gradient(160deg, var(--green-soft), #E4F0D8);
+    border-color:#A8C48A;
+  }
+
+  /* Expiring within 2 days: the most urgent state — red, and a sharp,
+     energetic bounce + pulsing glow so it actually demands attention
+     while scrolling, without feeling glitchy or chaotic. */
+  .pantry-card.card-critical{
+    background:linear-gradient(160deg, var(--red-soft), #F3C7B8);
+    border-color:var(--red);
+    animation:pantryCardUrgent 1.1s cubic-bezier(.36,.07,.19,.97) infinite;
+  }
+
+  @keyframes pantryCardUrgent{
+    0%   { transform:translateY(0) scale(1);        box-shadow:0 0 0 0 rgba(194,74,50,.55), var(--shadow-md); }
+    22%  { transform:translateY(-12px) scale(1.025); box-shadow:0 0 0 7px rgba(194,74,50,0), var(--shadow-md); }
+    45%  { transform:translateY(0) scale(1);         box-shadow:0 0 0 0 rgba(194,74,50,.4), var(--shadow-md); }
+    65%  { transform:translateY(-6px) scale(1.012);  box-shadow:0 0 0 3px rgba(194,74,50,.12), var(--shadow-md); }
+    100% { transform:translateY(0) scale(1);         box-shadow:0 0 0 0 rgba(194,74,50,.55), var(--shadow-md); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .pantry-card.card-critical{ animation:none; }
+  }
+
+  /* Low stock / needs restocking: a calmer yellow highlight, no bounce -
+     worth noticing, not urgent enough to demand attention right now. */
+  .pantry-card.card-restock{
+    background:linear-gradient(160deg, var(--yellow-soft), #F5E3B0);
+    border-color:var(--yellow);
+    box-shadow:0 0 0 1px rgba(217,166,61,.16), var(--shadow);
+  }
+
   .pantry-illustration{
     width:100%;height:88px;border-radius:12px;
     display:flex;align-items:center;justify-content:center;
@@ -282,7 +318,7 @@
     backdrop-filter:blur(4px);
   }
   .pantry-name{font-size:13px;font-weight:700;}
-  .pantry-meta{font-size:11px;color:var(--ink-faint);}
+  .pantry-meta{font-size:11px;color:var(--ink-soft);font-weight:600;}
   .scroll-arrow{
     position:absolute;top:32px;
     width:30px;height:30px;border-radius:50%;
@@ -323,6 +359,42 @@
   .recipe-meta span{display:flex;align-items:center;gap:4px;}
   .recipe-meta svg{width:11px;height:11px;}
   .recipe-uses{font-size:11px;color:var(--ink-faint);margin-top:2px;}
+
+  .recipe-loading-card, .recipe-empty-card{
+    grid-column:1/-1;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:26px;border-radius:16px;
+    background:var(--card-soft);border:1px dashed var(--border);
+    font-size:12.5px;color:var(--ink-faint);text-align:center;
+  }
+
+  /* ---------- RECIPES PAGE (full list, expandable steps) ---------- */
+  .recipes-refresh-btn{display:flex;align-items:center;gap:7px;white-space:nowrap;}
+  .recipes-page-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:16px;
+  }
+  .recipe-page-card{cursor:pointer;transition:box-shadow .15s ease;}
+  .recipe-page-card:hover{box-shadow:var(--shadow-md);}
+  .recipe-steps-toggle{
+    display:flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:700;color:var(--green);
+    margin-top:8px;
+  }
+  .recipe-steps-list{
+    display:flex;flex-direction:column;gap:6px;
+    margin-top:10px;padding-left:18px;
+    font-size:11.5px;color:var(--ink-soft);line-height:1.5;
+  }
+  .recipe-steps-list li{padding-left:2px;}
+
+  .recipes-page-loading{
+    display:flex;align-items:center;gap:12px;
+    padding:20px;border-radius:var(--radius-md);
+    background:var(--card-soft);border:1px solid var(--border);
+    font-size:13px;font-weight:600;color:var(--ink-soft);
+  }
 
   .dots{display:flex;gap:5px;justify-content:center;margin-top:12px;}
   .dots span{width:5px;height:5px;border-radius:50%;background:var(--border);}
@@ -788,6 +860,72 @@
   .upload-file-item .ufi-remove:hover{background:var(--red-soft);color:var(--red);}
   .upload-file-item .ufi-remove svg{width:11px;height:11px;}
 
+  /* ---------- SCAN PRODUCT PAGE ---------- */
+  .scan-btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .scan-btn-camera{background:var(--card);color:var(--green);border:1.5px solid var(--green);}
+  .scan-btn-camera:hover{background:var(--green-soft);transform:translateY(-1px);}
+
+  .scan-camera-box{
+    margin-top:14px;
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    background:#14140f;
+    padding:14px;
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+  }
+  .scan-camera-box video{
+    width:100%;max-width:420px;border-radius:12px;
+    background:#000;
+    transform:scaleX(-1);
+  }
+  .scan-camera-actions{display:flex;gap:10px;}
+  .scan-camera-status{font-size:12px;color:#F0C97A;min-height:14px;}
+
+  .scan-result-area{margin-top:16px;}
+  .scan-loading{
+    display:flex;align-items:center;gap:12px;
+    padding:16px;border-radius:var(--radius-md);
+    background:var(--card-soft);border:1px solid var(--border);
+    font-size:13px;font-weight:600;color:var(--ink-soft);
+  }
+  .scan-spinner{
+    width:20px;height:20px;border-radius:50%;flex-shrink:0;
+    border:3px solid var(--border);border-top-color:var(--green);
+    animation:scanSpin .8s linear infinite;
+  }
+  @keyframes scanSpin{to{transform:rotate(360deg);}}
+
+  .scan-error{
+    padding:16px;border-radius:var(--radius-md);
+    background:var(--red-soft);border:1px solid #E8B7A8;
+    color:#C24A32;font-size:13px;display:flex;flex-direction:column;gap:10px;
+  }
+  .scan-error .modal-btn-secondary{align-self:flex-start;}
+
+  .scan-result-card{
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    background:var(--card);
+    padding:18px;
+    display:flex;gap:16px;flex-wrap:wrap;
+  }
+  .scan-result-thumb{
+    width:96px;height:96px;border-radius:12px;object-fit:cover;
+    border:1px solid var(--border);flex-shrink:0;background:var(--card-soft);
+  }
+  .scan-result-fields{flex:1;min-width:220px;display:flex;flex-direction:column;gap:10px;}
+  .scan-result-badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .scan-source-badge{
+    font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;
+    background:var(--green-soft);color:var(--green);
+  }
+  .scan-confidence-badge{
+    font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;
+    background:var(--yellow-soft);color:#C98A2E;
+  }
+  .scan-result-row{display:flex;gap:10px;}
+  .scan-result-row > div{flex:1;}
+
   /* ---------- PANTRY PAGE: category sections ---------- */
   .pantry-categories{
     display:flex;
@@ -916,6 +1054,58 @@
   .modal-btn-primary{background:var(--green);color:#fff;}
   .modal-btn-primary:hover{background:#4C6A38;}
 
+  /* ---------- 3-dot menu on pantry cards ---------- */
+  .pantry-card-menu{position:absolute;top:8px;right:8px;z-index:3;}
+  .pantry-menu-btn{
+    width:22px;height:22px;border-radius:50%;
+    background:rgba(255,255,255,0.88);
+    backdrop-filter:blur(4px);
+    border:none;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease, transform .15s ease;
+  }
+  .pantry-menu-btn svg{width:13px;height:13px;}
+  .pantry-menu-btn:hover{background:var(--card);color:var(--ink);transform:scale(1.08);}
+
+  .pantry-menu-dropdown{
+    display:none;
+    position:absolute;top:26px;right:0;
+    min-width:172px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow-md);
+    padding:6px;
+    flex-direction:column;
+    gap:2px;
+    z-index:4;
+  }
+  .pantry-menu-dropdown.open{display:flex;}
+  .pantry-menu-dropdown button{
+    text-align:left;
+    background:none;border:none;
+    padding:8px 10px;border-radius:8px;
+    font-size:12.5px;font-weight:600;color:var(--ink);
+    cursor:pointer;font-family:inherit;
+    white-space:nowrap;
+  }
+  .pantry-menu-dropdown button:hover{background:var(--card-soft);}
+  .pantry-menu-dropdown button.danger{color:var(--red);}
+  .pantry-menu-dropdown button.danger:hover{background:#FCEAE5;}
+
+  /* ---------- Qty stepper (Update Item modal) ---------- */
+  .stepper-row{display:flex;align-items:center;gap:6px;}
+  .stepper-btn{
+    width:34px;height:38px;flex-shrink:0;border-radius:9px;
+    border:1px solid var(--border);background:var(--card-soft);
+    font-size:17px;font-weight:700;line-height:1;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .stepper-btn:hover{background:var(--green-soft);}
+  .stepper-input{text-align:center;}
+
   /* ---------- Delete button on pantry cards ---------- */
   .pantry-delete-btn{
     position:absolute;top:8px;right:8px;z-index:2;
@@ -973,3 +1163,163 @@
   }
   .history-item-text{font-size:13.5px;font-weight:600;color:var(--ink);}
   .history-item-time{font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
+
+/* ---------- Voice control ---------- */
+.voice-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  position:relative;
+}
+.voice-mic-btn{
+  position:relative;
+}
+.voice-mic-btn.listening{
+  background:var(--green-soft);
+  box-shadow:0 0 0 3px rgba(92,122,69,0.25);
+}
+.voice-mic-btn.listening svg{color:var(--green);}
+.voice-pulse{
+  display:none;
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+  border:2px solid var(--green);
+  animation:voicePulse 1.2s ease-out infinite;
+  pointer-events:none;
+}
+.voice-mic-btn.listening .voice-pulse{display:block;}
+@keyframes voicePulse{
+  0%{transform:scale(0.85);opacity:0.9;}
+  100%{transform:scale(1.35);opacity:0;}
+}
+.voice-status{
+  font-size:11.5px;
+  font-weight:700;
+  color:var(--green);
+  max-width:0;
+  overflow:hidden;
+  white-space:nowrap;
+  transition:max-width .2s ease;
+}
+.voice-status.active{max-width:110px;}
+.voice-toast{
+  position:fixed;
+  bottom:28px;
+  left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#2A3826;
+  color:#fff;
+  padding:12px 18px;
+  border-radius:14px;
+  font-size:13px;
+  font-weight:600;
+  max-width:min(520px,92vw);
+  box-shadow:0 12px 40px rgba(43,42,31,0.25);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:9999;
+  text-align:center;
+  line-height:1.4;
+}
+.voice-toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+.voice-toast.error{background:#C24A32;}
+
+.voice-fab{
+  position:fixed !important;
+  left:50% !important;
+  right:auto !important;
+  bottom:24px !important;
+  transform:translateX(-50%) !important;
+  width:60px !important;
+  height:60px !important;
+  border-radius:50% !important;
+  border:2.5px solid #5C7A45 !important;
+  background:#FFFFFF !important;
+  box-shadow:0 10px 32px rgba(43,42,31,0.28), 0 0 0 4px rgba(92,122,69,0.12) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  z-index:2147483646 !important;
+  cursor:pointer !important;
+  color:#5C7A45 !important;
+  padding:0 !important;
+}
+.voice-fab:hover{background:#E7EEDD !important;}
+.voice-fab.listening{
+  background:#E7EEDD !important;
+  color:#5C7A45 !important;
+  box-shadow:0 0 0 6px rgba(92,122,69,0.35), 0 10px 32px rgba(43,42,31,0.28) !important;
+  transform:translateX(-50%) !important;
+}
+.voice-fab.command-mode{
+  background:#5C7A45 !important;
+  color:#fff !important;
+  transform:translateX(-50%) !important;
+}
+.voice-fab .voice-pulse{
+  display:none;
+  position:absolute;inset:-8px;
+  border-radius:50%;
+  border:2px solid #5C7A45;
+  animation:voicePulse 1.2s ease-out infinite;
+  pointer-events:none;
+}
+.voice-fab.listening .voice-pulse{display:block;}
+.voice-mic-btn.command-mode{background:#5C7A45;}
+.voice-mic-btn.command-mode svg{color:#fff;}
+
+
+/* ========== Colour-blind mode ========== */
+.cb-toggle{
+  display:inline-flex;align-items:center;gap:5px;
+  height:38px;padding:0 12px;
+  border-radius:999px;
+  border:1.5px solid var(--border);
+  background:var(--card);
+  color:var(--ink-soft);
+  font-size:11px;font-weight:700;letter-spacing:.04em;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+  transition:background .15s,border-color .15s,color .15s,box-shadow .15s;
+  flex-shrink:0;
+}
+.cb-toggle:hover{background:var(--green-soft);color:var(--green);border-color:#A8C48A;}
+.cb-toggle.active{
+  background:#6B5B95;
+  border-color:#6B5B95;
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(107,91,149,.22);
+}
+.cb-toggle-label{line-height:1;}
+
+body.colorblind-mode .pantry-card.card-critical{
+  background:linear-gradient(160deg, #EDE4F7, #D4C4EE) !important;
+  border-color:#7B5EA7 !important;
+  animation-name:pantryCardUrgentCB;
+}
+@keyframes pantryCardUrgentCB{
+  0%   { transform:translateY(0) scale(1);        box-shadow:0 0 0 0 rgba(123,94,167,.55), var(--shadow-md); }
+  22%  { transform:translateY(-12px) scale(1.025); box-shadow:0 0 0 7px rgba(123,94,167,0), var(--shadow-md); }
+  45%  { transform:translateY(0) scale(1);         box-shadow:0 0 0 0 rgba(123,94,167,.4), var(--shadow-md); }
+  65%  { transform:translateY(-6px) scale(1.012);  box-shadow:0 0 0 3px rgba(123,94,167,.12), var(--shadow-md); }
+  100% { transform:translateY(0) scale(1);         box-shadow:0 0 0 0 rgba(123,94,167,.55), var(--shadow-md); }
+}
+body.colorblind-mode .pantry-card.card-safe{
+  background:linear-gradient(160deg, #E3EEF8, #D0E4F5) !important;
+  border-color:#7BA3C9 !important;
+}
+body.colorblind-mode .days-badge[style*="#5C7A45"],
+body.colorblind-mode .days-badge[style*="5C7A45"]{
+  color:#4E7FA6 !important;
+}
+/* Urgency red text badges → violet in CB mode */
+body.colorblind-mode .days-badge[style*="var(--red)"],
+body.colorblind-mode .days-badge[style*="#C24A32"],
+body.colorblind-mode .days-badge[style*="C24A32"]{
+  color:#7B5EA7 !important;
+}
