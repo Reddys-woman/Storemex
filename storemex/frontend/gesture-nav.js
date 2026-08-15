@@ -135,6 +135,167 @@ style.textContent = `
   #gnav-widget.collapsed #gnav-status {
     display: none;
   }
+
+  /* ==========================================================
+   GESTURE GUIDE
+   ========================================================== */
+
+#gnav-guide {
+  margin-top: 10px;
+  border-top: 1px solid #2a352680;
+  padding-top: 8px;
+}
+
+#gnav-guide-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border: none;
+  background: transparent;
+
+  color: #d99a3d;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+#gnav-guide-arrow {
+  transition: transform 0.2s ease;
+}
+
+#gnav-guide.open #gnav-guide-arrow {
+  transform: rotate(180deg);
+}
+
+#gnav-guide-content {
+  display: none;
+  margin-top: 8px;
+}
+
+#gnav-guide.open #gnav-guide-content {
+  display: block;
+}
+
+.gnav-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 4px 0;
+
+  color: #c3cdc0;
+}
+
+.gnav-guide-icon {
+  width: 24px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.gnav-guide-label {
+  font-size: 10px;
+}
+
+.gnav-guide-section {
+  color: #6b9c5b;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  margin-top: 8px;
+  margin-bottom: 3px;
+}
+
+#gnav-first-time {
+  position: fixed;
+  right: 250px;
+  bottom: 20px;
+
+  width: 260px;
+
+  background: #101610f7;
+  border: 1px solid #6b9c5b80;
+  border-radius: 16px;
+
+  padding: 16px;
+
+  font-family: "SF Mono", "Menlo", monospace;
+
+  color: #c3cdc0;
+
+  z-index: 100000;
+
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.45);
+
+  backdrop-filter: blur(8px);
+}
+
+#gnav-first-time h3 {
+  margin: 0 0 6px;
+
+  color: #d99a3d;
+
+  font-size: 13px;
+}
+
+#gnav-first-time p {
+  margin: 0 0 12px;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.gnav-welcome-row {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 3px 0;
+
+  font-size: 10px;
+}
+
+.gnav-welcome-icon {
+  width: 24px;
+
+  text-align: center;
+
+  font-size: 16px;
+}
+
+#gnav-first-time button {
+  width: 100%;
+
+  margin-top: 10px;
+
+  padding: 8px;
+
+  border-radius: 999px;
+
+  border: 1px solid #6b9c5b;
+
+  background: transparent;
+
+  color: #6b9c5b;
+
+  font-family: inherit;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+#gnav-first-time button:hover {
+  background: #6b9c5b;
+  color: #0d120e;
+}
 `;
 
 document.head.appendChild(style);
@@ -162,12 +323,228 @@ widget.innerHTML = `
     <span id="gnav-tag"></span>
   </div>
 
+  <div id="gnav-guide">
+
+    <button id="gnav-guide-toggle" type="button">
+      <span>GESTURE GUIDE</span>
+      <span id="gnav-guide-arrow">▼</span>
+    </button>
+
+    <div id="gnav-guide-content">
+
+      <div
+        id="gnav-guide-navigation"
+      >
+
+        <div class="gnav-guide-section">
+          Navigation
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">✊</span>
+          <span class="gnav-guide-label">
+            Dashboard
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">☝️</span>
+          <span class="gnav-guide-label">
+            Pantry
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">✌️</span>
+          <span class="gnav-guide-label">
+            Scan
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">🤟</span>
+          <span class="gnav-guide-label">
+            Recipes
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">🖖</span>
+          <span class="gnav-guide-label">
+            Shopping
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">🖐️</span>
+          <span class="gnav-guide-label">
+            Alerts
+          </span>
+        </div>
+
+        <div class="gnav-guide-section">
+          Actions
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">🤏</span>
+          <span class="gnav-guide-label">
+            Action / Select
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">←→</span>
+          <span class="gnav-guide-label">
+            Shopping cards
+          </span>
+        </div>
+
+      </div>
+
+
+      <div
+        id="gnav-guide-scan"
+        style="display:none;"
+      >
+
+        <div class="gnav-guide-section">
+          Scan Controls
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">🤏</span>
+          <span class="gnav-guide-label">
+            Open Camera
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">🤏</span>
+          <span class="gnav-guide-label">
+            Capture Image
+          </span>
+        </div>
+
+        <div class="gnav-guide-row">
+          <span class="gnav-guide-icon">✊</span>
+          <span class="gnav-guide-label">
+            Cancel Camera
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
   <button id="gnav-toggle">
     Enable gesture nav
   </button>
 `;
 
 document.body.appendChild(widget);
+
+// ============================================================
+// FIRST-TIME GESTURE HELP
+// ============================================================
+
+function showFirstTimeGuide() {
+
+  if (
+    localStorage.getItem(
+      "storemex_gesture_guide_seen"
+    )
+  ) {
+    return;
+  }
+
+
+  const popup =
+    document.createElement(
+      "div"
+    );
+
+
+  popup.id =
+    "gnav-first-time";
+
+
+  popup.innerHTML = `
+    <h3>
+      👋 Gesture Navigation
+    </h3>
+
+    <p>
+      Use your hand to navigate StoreMex
+      without touching the screen.
+    </p>
+
+    <div class="gnav-welcome-row">
+      <span class="gnav-welcome-icon">✊</span>
+      Dashboard
+    </div>
+
+    <div class="gnav-welcome-row">
+      <span class="gnav-welcome-icon">☝️</span>
+      Pantry
+    </div>
+
+    <div class="gnav-welcome-row">
+      <span class="gnav-welcome-icon">✌️</span>
+      Scan
+    </div>
+
+    <div class="gnav-welcome-row">
+      <span class="gnav-welcome-icon">🤟</span>
+      Recipes
+    </div>
+
+    <div class="gnav-welcome-row">
+      <span class="gnav-welcome-icon">🖖</span>
+      Shopping
+    </div>
+
+    <div class="gnav-welcome-row">
+      <span class="gnav-welcome-icon">🖐️</span>
+      Alerts
+    </div>
+
+    <div class="gnav-welcome-row">
+      <span class="gnav-welcome-icon">🤏</span>
+      Actions / Select
+    </div>
+
+    <button id="gnav-welcome-close">
+      Got it
+    </button>
+  `;
+
+
+  document.body.appendChild(
+    popup
+  );
+
+
+  document
+    .getElementById(
+      "gnav-welcome-close"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        localStorage.setItem(
+          "storemex_gesture_guide_seen",
+          "true"
+        );
+
+
+        popup.remove();
+
+      }
+    );
+}
 
 
 // ============================================================
@@ -191,6 +568,77 @@ const modelStatus =
 
 const gestureTag =
   document.getElementById("gnav-tag");
+
+// ============================================================
+// GESTURE GUIDE
+// ============================================================
+
+const guide =
+  document.getElementById(
+    "gnav-guide"
+  );
+
+const guideToggle =
+  document.getElementById(
+    "gnav-guide-toggle"
+  );
+
+const navigationGuide =
+  document.getElementById(
+    "gnav-guide-navigation"
+  );
+
+const scanGuide =
+  document.getElementById(
+    "gnav-guide-scan"
+  );
+
+
+// ------------------------------------------------------------
+// COLLAPSE / EXPAND GUIDE
+// ------------------------------------------------------------
+
+guideToggle.addEventListener(
+  "click",
+  () => {
+
+    guide.classList.toggle(
+      "open"
+    );
+
+  }
+);
+
+
+// ------------------------------------------------------------
+// UPDATE GUIDE BASED ON PAGE
+// ------------------------------------------------------------
+
+function updateGestureGuide() {
+
+  const currentPage =
+    getCurrentPage();
+
+
+  if (
+    currentPage === "scan"
+  ) {
+
+    navigationGuide.style.display =
+      "none";
+
+    scanGuide.style.display =
+      "block";
+
+  } else {
+
+    navigationGuide.style.display =
+      "block";
+
+    scanGuide.style.display =
+      "none";
+  }
+}
 
 
 // ============================================================
@@ -420,6 +868,8 @@ function switchToNavIndex(count) {
 
 
   navEl.click();
+
+  updateGestureGuide();
 
 
   const label =
@@ -1404,6 +1854,9 @@ toggleBtn.addEventListener(
 
     modelStatus.textContent =
       "tracking";
+
+    updateGestureGuide();
+    showFirstTimeGuide();
 
 
     gestureTag.textContent =
