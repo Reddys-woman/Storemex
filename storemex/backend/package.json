@@ -9,5 +9,9 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "javascript-barcode-reader": "^1.0.0"
+  },
+  "allowScripts": {
+    "@google/genai@2.16.0": true,
+    "protobufjs@7.6.5": true
   }
 }
